@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/pages/Dashboard';
 
-// Import other pages as we create them
-const Income = () => <div className="p-6"><h1 className="text-2xl font-bold">Receitas</h1><p className="text-muted-foreground">Gestão de receitas em desenvolvimento...</p></div>;
-const Expenses = () => <div className="p-6"><h1 className="text-2xl font-bold">Despesas</h1><p className="text-muted-foreground">Gestão de despesas em desenvolvimento...</p></div>;
-const Categories = () => <div className="p-6"><h1 className="text-2xl font-bold">Categorias</h1><p className="text-muted-foreground">Gestão de categorias em desenvolvimento...</p></div>;
+// Import pages
+import Income from './Income';
+import Expenses from './Expenses';
+import Categories from './Categories';
 const Payables = () => <div className="p-6"><h1 className="text-2xl font-bold">Contas a Pagar</h1><p className="text-muted-foreground">Gestão de contas a pagar em desenvolvimento...</p></div>;
 const Calendar = () => <div className="p-6"><h1 className="text-2xl font-bold">Calendário</h1><p className="text-muted-foreground">Calendário financeiro em desenvolvimento...</p></div>;
 const Investments = () => <div className="p-6"><h1 className="text-2xl font-bold">Investimentos</h1><p className="text-muted-foreground">Gestão de investimentos em desenvolvimento...</p></div>;
