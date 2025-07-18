@@ -6,8 +6,9 @@ import { Dashboard } from '@/pages/Dashboard';
 import Income from './Income';
 import Expenses from './Expenses';
 import Categories from './Categories';
+import Calendar from './Calendar';
+
 const Payables = () => <div className="p-6"><h1 className="text-2xl font-bold">Contas a Pagar</h1><p className="text-muted-foreground">Gestão de contas a pagar em desenvolvimento...</p></div>;
-const Calendar = () => <div className="p-6"><h1 className="text-2xl font-bold">Calendário</h1><p className="text-muted-foreground">Calendário financeiro em desenvolvimento...</p></div>;
 const Investments = () => <div className="p-6"><h1 className="text-2xl font-bold">Investimentos</h1><p className="text-muted-foreground">Gestão de investimentos em desenvolvimento...</p></div>;
 const Alerts = () => <div className="p-6"><h1 className="text-2xl font-bold">Alertas</h1><p className="text-muted-foreground">Central de alertas em desenvolvimento...</p></div>;
 const Settings = () => <div className="p-6"><h1 className="text-2xl font-bold">Configurações</h1><p className="text-muted-foreground">Configurações do sistema em desenvolvimento...</p></div>;

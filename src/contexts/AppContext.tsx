@@ -64,7 +64,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       description: 'Salário',
       amount: 5000,
       type: 'income',
-      category: 'Trabalho',
+      category: '1',
       subcategory: 'Salário',
       date: '2025-01-15',
       group: 'familia'
@@ -74,7 +74,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       description: 'Supermercado',
       amount: 350,
       type: 'expense',
-      category: 'Alimentação',
+      category: '3',
       subcategory: 'Supermercado',
       date: '2025-01-16',
       group: 'familia'
@@ -84,10 +84,60 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       description: 'Venda de Produto',
       amount: 2500,
       type: 'income',
-      category: 'Vendas',
+      category: '2',
       subcategory: 'Produto A',
       date: '2025-01-17',
       group: 'empresa'
+    },
+    {
+      id: '4',
+      description: 'Combustível',
+      amount: 200,
+      type: 'expense',
+      category: '5',
+      subcategory: 'Gasolina',
+      date: '2025-01-18',
+      group: 'familia'
+    },
+    {
+      id: '5',
+      description: 'Freelance',
+      amount: 1500,
+      type: 'income',
+      category: '1',
+      subcategory: 'Freelance',
+      date: '2025-01-19',
+      group: 'familia'
+    },
+    {
+      id: '6',
+      description: 'Restaurante',
+      amount: 120,
+      type: 'expense',
+      category: '3',
+      subcategory: 'Restaurante',
+      date: '2025-01-20',
+      group: 'familia'
+    },
+    {
+      id: '7',
+      description: 'Material Escritório',
+      amount: 450,
+      type: 'expense',
+      category: '6',
+      subcategory: 'Papelaria',
+      date: '2025-01-21',
+      group: 'empresa'
+    },
+    {
+      id: '8',
+      description: 'Consulta Médica',
+      amount: 300,
+      type: 'expense',
+      category: '7',
+      subcategory: 'Consulta',
+      date: '2025-01-22',
+      group: 'familia'
     }
   ]);
 
@@ -98,7 +148,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       amount: 250,
       dueDate: '2025-01-25',
       isPaid: false,
-      category: 'Utilidades',
+      category: '4',
       group: 'familia'
     },
     {
@@ -107,8 +157,35 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       amount: 1200,
       dueDate: '2025-01-20',
       isPaid: false,
-      category: 'Infraestrutura',
+      category: '6',
       group: 'empresa'
+    },
+    {
+      id: '3',
+      description: 'Internet',
+      amount: 120,
+      dueDate: '2025-01-28',
+      isPaid: false,
+      category: '4',
+      group: 'familia'
+    },
+    {
+      id: '4',
+      description: 'Fornecedor Material',
+      amount: 800,
+      dueDate: '2025-01-24',
+      isPaid: true,
+      category: '6',
+      group: 'empresa'
+    },
+    {
+      id: '5',
+      description: 'Cartão de Crédito',
+      amount: 450,
+      dueDate: '2025-01-12',
+      isPaid: false,
+      category: '8',
+      group: 'familia'
     }
   ]);
 
@@ -136,6 +213,30 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       name: 'Utilidades',
       type: 'expense',
       subcategories: ['Luz', 'Água', 'Internet', 'Telefone']
+    },
+    {
+      id: '5',
+      name: 'Transporte',
+      type: 'expense',
+      subcategories: ['Gasolina', 'Ônibus', 'Uber', 'Manutenção']
+    },
+    {
+      id: '6',
+      name: 'Empresa',
+      type: 'expense',
+      subcategories: ['Aluguel', 'Papelaria', 'Equipamentos', 'Fornecedores']
+    },
+    {
+      id: '7',
+      name: 'Saúde',
+      type: 'expense',
+      subcategories: ['Consulta', 'Medicamentos', 'Exames', 'Plano de Saúde']
+    },
+    {
+      id: '8',
+      name: 'Financeiro',
+      type: 'expense',
+      subcategories: ['Cartão de Crédito', 'Empréstimos', 'Taxas', 'Juros']
     }
   ]);
 
