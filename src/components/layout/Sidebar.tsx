@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   BarChart3,
@@ -13,11 +14,15 @@ import {
   Menu,
   X,
   Building2,
-  Users
+  Users,
+  User,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   activeTab: string;
@@ -39,6 +44,8 @@ const menuItems = [
 export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { payables, selectedGroup, setSelectedGroup } = useApp();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Calculate overdue payables for alerts
   const overduePayables = payables.filter(p => {
@@ -145,9 +152,44 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             })}
           </nav>
 
-          {/* Footer */}
-          <div className="p-4 border-t">
-            <div className="text-xs text-muted-foreground text-center">
+          {/* User Profile */}
+          <div className="p-4 border-t space-y-2">
+            <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">
+                  {user?.email?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  navigate('/profile');
+                  setIsOpen(false);
+                }}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Perfil
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="text-xs text-muted-foreground text-center pt-2">
               © 2025 GestFin
             </div>
           </div>
