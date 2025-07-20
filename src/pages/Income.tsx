@@ -72,20 +72,10 @@ export default function Income() {
             Gerencie suas receitas e ganhos
           </p>
         </div>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Receita
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Nova Receita</DialogTitle>
-            </DialogHeader>
-            <IncomeForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <Button className="flex items-center gap-2" onClick={() => setIsFormOpen(true)}>
+          <Plus className="h-4 w-4" />
+          Nova Receita
+        </Button>
       </div>
 
       {/* Summary Card */}
@@ -157,20 +147,10 @@ export default function Income() {
                   ? 'Tente ajustar os filtros ou adicione uma nova receita.'
                   : 'Comece adicionando sua primeira receita.'}
               </p>
-              <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Receita
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Adicionar Nova Receita</DialogTitle>
-                  </DialogHeader>
-                  <IncomeForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => setIsFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Receita
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -236,6 +216,8 @@ export default function Income() {
           )}
         </CardContent>
       </Card>
+      
+      <IncomeForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>
   );
 }

@@ -74,20 +74,10 @@ export default function Expenses() {
             Gerencie suas despesas e gastos
           </p>
         </div>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Despesa
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Nova Despesa</DialogTitle>
-            </DialogHeader>
-            <ExpenseForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <Button className="flex items-center gap-2" onClick={() => setIsFormOpen(true)}>
+          <Plus className="h-4 w-4" />
+          Nova Despesa
+        </Button>
       </div>
 
       {/* Summary Card */}
@@ -159,20 +149,10 @@ export default function Expenses() {
                   ? 'Tente ajustar os filtros ou adicione uma nova despesa.'
                   : 'Comece adicionando sua primeira despesa.'}
               </p>
-              <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Despesa
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Adicionar Nova Despesa</DialogTitle>
-                  </DialogHeader>
-                  <ExpenseForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => setIsFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Despesa
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -238,6 +218,8 @@ export default function Expenses() {
           )}
         </CardContent>
       </Card>
+      
+      <ExpenseForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>
   );
 }
