@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, TrendingDown, PiggyBank, AlertTriangle } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, PiggyBank, AlertTriangle, Target } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CategoryChart } from '@/components/dashboard/CategoryChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { useIncome } from '@/hooks/useIncome';
 import { useExpenses } from '@/hooks/useExpenses';
 import { usePayables } from '@/hooks/usePayables';
+import { useInvestments } from '@/hooks/useInvestments';
 import { useCategories } from '@/hooks/useCategories';
 
 export function Dashboard() {
   const { income, loading: incomeLoading } = useIncome();
   const { expenses, loading: expensesLoading } = useExpenses();
   const { payables, loading: payablesLoading } = usePayables();
+  const { investments, loading: investmentsLoading } = useInvestments();
   const { categories } = useCategories();
 
   const formatCurrency = (amount: number) => {
@@ -22,7 +24,7 @@ export function Dashboard() {
     }).format(amount);
   };
 
-  if (incomeLoading || expensesLoading || payablesLoading) {
+  if (incomeLoading || expensesLoading || payablesLoading || investmentsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -38,6 +40,11 @@ export function Dashboard() {
   const totalExpenses = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
   const netProfit = totalIncome - totalExpenses;
   const pendingPayables = payables.filter(p => !p.is_paid).reduce((sum, p) => sum + Number(p.amount), 0);
+
+  // Calculate investment totals
+  const totalInvested = investments.reduce((sum, inv) => sum + Number(inv.amount), 0);
+  const totalCurrentValue = investments.reduce((sum, inv) => sum + Number(inv.current_value || inv.amount), 0);
+  const investmentGain = totalCurrentValue - totalInvested;
 
   // Calculate expense data for chart
   const expensesByCategory = expenses.reduce((acc, expense) => {
@@ -123,7 +130,7 @@ export function Dashboard() {
       )}
 
       {/* Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <MetricCard
           title="Total de Receitas"
           value={formatCurrency(totalIncome)}
@@ -151,6 +158,16 @@ export function Dashboard() {
           icon={<PiggyBank className="h-4 w-4" />}
           variant="investment"
         />
+        <MetricCard
+          title="Investimentos"
+          value={formatCurrency(totalCurrentValue)}
+          icon={<Target className="h-4 w-4" />}
+          variant={investmentGain >= 0 ? 'income' : 'expense'}
+          trend={{ 
+            value: totalInvested > 0 ? (investmentGain / totalInvested) * 100 : 0, 
+            isPositive: investmentGain >= 0 
+          }}
+        />
       </div>
 
       {/* Charts */}
@@ -167,6 +184,132 @@ export function Dashboard() {
           total={totalIncome}
           formatCurrency={formatCurrency}
         />
+      </div>
+
+      {/* Investment and Payables Summary */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Investment Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-blue-600" />
+              Resumo de Investimentos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {investments.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Investido</p>
+                    <p className="text-xl font-bold text-blue-600">{formatCurrency(totalInvested)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Valor Atual</p>
+                    <p className="text-xl font-bold text-blue-600">{formatCurrency(totalCurrentValue)}</p>
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Ganho/Perda</span>
+                    <span className={`font-semibold ${investmentGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {investmentGain >= 0 ? '+' : ''}{formatCurrency(investmentGain)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-muted-foreground">Rentabilidade</span>
+                    <span className={`font-semibold ${investmentGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {totalInvested > 0 ? ((investmentGain / totalInvested) * 100).toFixed(2) : '0.00'}%
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Top Investimentos:</p>
+                  {investments.slice(0, 3).map((investment) => (
+                    <div key={investment.id} className="flex justify-between text-sm">
+                      <span className="truncate">{investment.title}</span>
+                      <span className="font-medium">{formatCurrency(Number(investment.current_value || investment.amount))}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhum investimento</h3>
+                <p className="text-muted-foreground mb-4">
+                  Comece a investir para acompanhar seu patrimônio
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Payables Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              Resumo de Contas a Pagar
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {payables.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Pendente</p>
+                    <p className="text-xl font-bold text-orange-600">{formatCurrency(pendingPayables)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Contas Pendentes</p>
+                    <p className="text-xl font-bold text-orange-600">{payables.filter(p => !p.is_paid).length}</p>
+                  </div>
+                </div>
+                {overduePayables.length > 0 && (
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Em Atraso</span>
+                      <span className="font-semibold text-red-600">
+                        {overduePayables.length} conta(s)
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-sm text-muted-foreground">Valor em Atraso</span>
+                      <span className="font-semibold text-red-600">
+                        {formatCurrency(overduePayables.reduce((sum, p) => sum + Number(p.amount), 0))}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Próximos Vencimentos:</p>
+                  {payables
+                    .filter(p => !p.is_paid)
+                    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                    .slice(0, 3)
+                    .map((payable) => (
+                      <div key={payable.id} className="flex justify-between text-sm">
+                        <div>
+                          <span className="truncate block">{payable.title}</span>
+                          <span className="text-muted-foreground">{new Date(payable.due_date).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <span className="font-medium">{formatCurrency(Number(payable.amount))}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <PiggyBank className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhuma conta a pagar</h3>
+                <p className="text-muted-foreground mb-4">
+                  Todas as contas estão em dia!
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Transactions */}
