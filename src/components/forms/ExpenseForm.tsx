@@ -37,7 +37,7 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
       const data = {
         ...formData,
         amount: parseFloat(formData.amount),
-        category_id: formData.category_id || null,
+        category_id: formData.category_id === "none" ? null : formData.category_id,
       };
 
       if (expense) {
@@ -109,7 +109,7 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sem categoria</SelectItem>
+                <SelectItem value="none">Sem categoria</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     <div className="flex items-center gap-2">
