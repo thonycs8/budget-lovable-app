@@ -4,63 +4,89 @@ import { CategoryChart } from '@/components/dashboard/CategoryChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/AppContext';
+import { useIncome } from '@/hooks/useIncome';
+import { useExpenses } from '@/hooks/useExpenses';
+import { usePayables } from '@/hooks/usePayables';
+import { useCategories } from '@/hooks/useCategories';
 
 export function Dashboard() {
-  const { transactions, payables, selectedGroup, formatCurrency } = useApp();
+  const { income, loading: incomeLoading } = useIncome();
+  const { expenses, loading: expensesLoading } = useExpenses();
+  const { payables, loading: payablesLoading } = usePayables();
+  const { categories } = useCategories();
 
-  // Filter data by selected group
-  const groupTransactions = transactions.filter(t => t.group === selectedGroup);
-  const groupPayables = payables.filter(p => p.group === selectedGroup);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(amount);
+  };
+
+  if (incomeLoading || expensesLoading || payablesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate totals
-  const incomeTransactions = groupTransactions.filter(t => t.type === 'income');
-  const expenseTransactions = groupTransactions.filter(t => t.type === 'expense');
-
-  const totalIncome = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = income.reduce((sum, item) => sum + Number(item.amount), 0);
+  const totalExpenses = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
   const netProfit = totalIncome - totalExpenses;
-  const pendingPayables = groupPayables.filter(p => !p.isPaid).reduce((sum, p) => sum + p.amount, 0);
+  const pendingPayables = payables.filter(p => !p.is_paid).reduce((sum, p) => sum + Number(p.amount), 0);
 
   // Calculate expense data for chart
-  const expensesByCategory = expenseTransactions.reduce((acc, transaction) => {
-    const existing = acc.find(item => item.name === transaction.subcategory);
+  const expensesByCategory = expenses.reduce((acc, expense) => {
+    const category = categories.find(cat => cat.id === expense.category_id);
+    const categoryName = category?.name || 'Sem categoria';
+    const existing = acc.find(item => item.name === categoryName);
     if (existing) {
-      existing.value += transaction.amount;
+      existing.value += Number(expense.amount);
     } else {
       acc.push({
-        name: transaction.subcategory,
-        value: transaction.amount,
-        color: '#ef4444'
+        name: categoryName,
+        value: Number(expense.amount),
+        color: category?.color || '#ef4444'
       });
     }
     return acc;
   }, [] as Array<{ name: string; value: number; color: string }>);
 
   // Calculate income data for chart
-  const incomesByCategory = incomeTransactions.reduce((acc, transaction) => {
-    const existing = acc.find(item => item.name === transaction.subcategory);
+  const incomesByCategory = income.reduce((acc, incomeItem) => {
+    const category = categories.find(cat => cat.id === incomeItem.category_id);
+    const categoryName = category?.name || 'Sem categoria';
+    const existing = acc.find(item => item.name === categoryName);
     if (existing) {
-      existing.value += transaction.amount;
+      existing.value += Number(incomeItem.amount);
     } else {
       acc.push({
-        name: transaction.subcategory,
-        value: transaction.amount,
-        color: '#22c55e'
+        name: categoryName,
+        value: Number(incomeItem.amount),
+        color: category?.color || '#22c55e'
       });
     }
     return acc;
   }, [] as Array<{ name: string; value: number; color: string }>);
 
   // Calculate overdue payables
-  const overduePayables = groupPayables.filter(p => {
-    const dueDate = new Date(p.dueDate);
+  const overduePayables = payables.filter(p => {
+    const dueDate = new Date(p.due_date);
     const today = new Date();
-    return !p.isPaid && dueDate < today;
+    return !p.is_paid && dueDate < today;
   });
 
-  // Recent transactions
-  const recentTransactions = groupTransactions
+  // Recent transactions - combine income and expenses
+  const allTransactions = [
+    ...income.map(item => ({ ...item, type: 'income' as const })),
+    ...expenses.map(item => ({ ...item, type: 'expense' as const }))
+  ];
+  
+  const recentTransactions = allTransactions
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
@@ -71,7 +97,7 @@ export function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Visão geral das finanças - {selectedGroup === 'empresa' ? 'Empresa' : 'Família'}
+            Visão geral das suas finanças
           </p>
         </div>
       </div>
@@ -87,7 +113,7 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-3">
-              Você tem {overduePayables.length} conta(s) em atraso no valor de {formatCurrency(overduePayables.reduce((sum, p) => sum + p.amount, 0))}
+              Você tem {overduePayables.length} conta(s) em atraso no valor de {formatCurrency(overduePayables.reduce((sum, p) => sum + Number(p.amount), 0))}
             </p>
             <Button variant="destructive" size="sm">
               Ver Contas
@@ -151,34 +177,37 @@ export function Dashboard() {
         <CardContent>
           {recentTransactions.length > 0 ? (
             <div className="space-y-3">
-              {recentTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card/50"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      transaction.type === 'income' ? 'bg-income' : 'bg-expense'
-                    }`} />
-                    <div>
-                      <p className="font-medium">{transaction.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {transaction.subcategory} • {new Date(transaction.date).toLocaleDateString('pt-BR')}
+              {recentTransactions.map((transaction) => {
+                const category = categories.find(cat => cat.id === transaction.category_id);
+                return (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-card/50"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        transaction.type === 'income' ? 'bg-income' : 'bg-expense'
+                      }`} />
+                      <div>
+                        <p className="font-medium">{transaction.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {category?.name || 'Sem categoria'} • {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-semibold ${
+                        transaction.type === 'income' ? 'text-income' : 'text-expense'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount))}
                       </p>
+                      <Badge variant="outline" className="text-xs">
+                        {transaction.type === 'income' ? 'Receita' : 'Despesa'}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-semibold ${
-                      transaction.type === 'income' ? 'text-income' : 'text-expense'
-                    }`}>
-                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                    </p>
-                    <Badge variant="outline" className="text-xs">
-                      {transaction.type === 'income' ? 'Receita' : 'Despesa'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">

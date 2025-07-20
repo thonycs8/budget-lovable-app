@@ -2,12 +2,15 @@ import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, parseISO, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Plus, DollarSign, AlertTriangle, Calendar as CalendarIcon } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
+import { useIncome } from '@/hooks/useIncome';
+import { useExpenses } from '@/hooks/useExpenses';
+import { usePayables } from '@/hooks/usePayables';
+import { useCategories } from '@/hooks/useCategories';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { TransactionForm } from '@/components/forms/TransactionForm';
+import IncomeForm from '@/components/forms/IncomeForm';
+import ExpenseForm from '@/components/forms/ExpenseForm';
 import { PayableForm } from '@/components/forms/PayableForm';
 import { cn } from '@/lib/utils';
 
@@ -22,51 +25,80 @@ interface CalendarEvent {
 }
 
 export default function Calendar() {
-  const { transactions, payables, categories, formatCurrency, selectedGroup } = useApp();
+  const { income, loading: incomeLoading } = useIncome();
+  const { expenses, loading: expensesLoading } = useExpenses();
+  const { payables, loading: payablesLoading } = usePayables();
+  const { categories } = useCategories();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+  const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
+  const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isPayableFormOpen, setIsPayableFormOpen] = useState(false);
-  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
 
-  // Filter data by selected group
-  const filteredTransactions = transactions.filter(t => t.group === selectedGroup);
-  const filteredPayables = payables.filter(p => p.group === selectedGroup);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(amount);
+  };
+
+  if (incomeLoading || expensesLoading || payablesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando calendário...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Generate calendar events
   const calendarEvents = useMemo((): CalendarEvent[] => {
     const events: CalendarEvent[] = [];
 
-    // Add transactions
-    filteredTransactions.forEach(transaction => {
+    // Add income
+    income.forEach(incomeItem => {
       events.push({
-        id: transaction.id,
-        title: transaction.description,
-        amount: transaction.amount,
-        type: transaction.type,
-        date: transaction.date,
-        category: transaction.category,
+        id: incomeItem.id,
+        title: incomeItem.title,
+        amount: Number(incomeItem.amount),
+        type: 'income',
+        date: incomeItem.date,
+        category: incomeItem.category_id || '',
+      });
+    });
+
+    // Add expenses
+    expenses.forEach(expense => {
+      events.push({
+        id: expense.id,
+        title: expense.title,
+        amount: Number(expense.amount),
+        type: 'expense',
+        date: expense.date,
+        category: expense.category_id || '',
       });
     });
 
     // Add payables
-    filteredPayables.forEach(payable => {
-      const dueDate = new Date(payable.dueDate);
-      const isOverdue = dueDate < new Date() && !payable.isPaid;
+    payables.forEach(payable => {
+      const dueDate = new Date(payable.due_date);
+      const isOverdue = dueDate < new Date() && !payable.is_paid;
       
       events.push({
         id: payable.id,
-        title: payable.description,
-        amount: payable.amount,
+        title: payable.title,
+        amount: Number(payable.amount),
         type: isOverdue ? 'payable-overdue' : 'payable',
-        date: payable.dueDate,
-        category: payable.category,
-        isPaid: payable.isPaid,
+        date: payable.due_date,
+        category: payable.category_id || '',
+        isPaid: payable.is_paid,
       });
     });
 
     return events;
-  }, [filteredTransactions, filteredPayables]);
+  }, [income, expenses, payables]);
 
   // Get events for a specific date
   const getEventsForDate = (date: Date): CalendarEvent[] => {
@@ -150,64 +182,37 @@ export default function Calendar() {
         </div>
         
         <div className="flex flex-wrap gap-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Receita</span>
-                <span className="sm:hidden">+R</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Adicionar Nova Receita</DialogTitle>
-              </DialogHeader>
-              <TransactionForm type="income" />
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setIsIncomeFormOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Receita</span>
+            <span className="sm:hidden">+R</span>
+          </Button>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Despesa</span>
-                <span className="sm:hidden">+D</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Adicionar Nova Despesa</DialogTitle>
-              </DialogHeader>
-              <TransactionForm type="expense" />
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setIsExpenseFormOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Despesa</span>
+            <span className="sm:hidden">+D</span>
+          </Button>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Conta a Pagar</span>
-                <span className="sm:hidden">+C</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Adicionar Conta a Pagar</DialogTitle>
-              </DialogHeader>
-              <PayableForm />
-            </DialogContent>
-          </Dialog>
+          <Button 
+            size="sm"
+            className="flex items-center gap-2"
+            disabled
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Conta a Pagar</span>
+            <span className="sm:hidden">+C</span>
+          </Button>
         </div>
       </div>
 
@@ -434,6 +439,9 @@ export default function Calendar() {
           </CardContent>
         </Card>
       )}
+      
+      <IncomeForm isOpen={isIncomeFormOpen} onClose={() => setIsIncomeFormOpen(false)} />
+      <ExpenseForm isOpen={isExpenseFormOpen} onClose={() => setIsExpenseFormOpen(false)} />
     </div>
   );
 }
