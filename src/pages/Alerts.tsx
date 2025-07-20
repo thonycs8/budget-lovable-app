@@ -1,12 +1,17 @@
+
 import { useState } from 'react';
-import { Bell, AlertTriangle, CheckCircle, Clock, Calendar, DollarSign, TrendingUp, Settings, X } from 'lucide-react';
+import { Bell, AlertTriangle, CheckCircle, Clock, Calendar, DollarSign, TrendingUp, Settings, X, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { useApp } from '@/contexts/AppContext';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useIncome } from '@/hooks/useIncome';
+import { useExpenses } from '@/hooks/useExpenses';
+import { usePayables } from '@/hooks/usePayables';
 import { format, parseISO, isBefore, addDays, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 interface Alert {
   id: string;
@@ -16,13 +21,18 @@ interface Alert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   date: string;
   isRead: boolean;
+  isDismissed: boolean;
   actionable: boolean;
   amount?: number;
 }
 
 export default function Alerts() {
-  const { transactions, payables, selectedGroup, formatCurrency } = useApp();
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const { income } = useIncome();
+  const { expenses } = useExpenses();
+  const { payables } = usePayables();
+  const { toast } = useToast();
+  
+  const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [alertSettings, setAlertSettings] = useState({
     overduePayables: true,
@@ -32,57 +42,68 @@ export default function Alerts() {
     systemNotifications: true,
   });
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(amount);
+  };
+
   // Generate dynamic alerts based on current data
   const generateAlerts = (): Alert[] => {
     const alerts: Alert[] = [];
     const today = new Date();
     const next7Days = addDays(today, 7);
     
-    // Filter data by selected group
-    const groupPayables = payables.filter(p => p.group === selectedGroup);
-    const groupTransactions = transactions.filter(t => t.group === selectedGroup);
-    
     // Check for overdue payables
     if (alertSettings.overduePayables) {
-      const overduePayables = groupPayables.filter(p => {
-        const dueDate = parseISO(p.dueDate);
-        return !p.isPaid && isBefore(dueDate, today);
+      const overduePayables = payables.filter(p => {
+        const dueDate = parseISO(p.due_date);
+        return !p.is_paid && isBefore(dueDate, today);
       });
 
       overduePayables.forEach(payable => {
-        alerts.push({
-          id: `overdue-${payable.id}`,
-          type: 'overdue',
-          title: 'Conta Vencida!',
-          description: `${payable.description} venceu em ${format(parseISO(payable.dueDate), 'dd/MM/yyyy')}`,
-          severity: 'critical',
-          date: payable.dueDate,
-          isRead: false,
-          actionable: true,
-          amount: payable.amount,
-        });
+        const alertId = `overdue-${payable.id}`;
+        if (!dismissedAlerts.includes(alertId)) {
+          alerts.push({
+            id: alertId,
+            type: 'overdue',
+            title: 'Conta Vencida!',
+            description: `${payable.title} venceu em ${format(parseISO(payable.due_date), 'dd/MM/yyyy')}`,
+            severity: 'critical',
+            date: payable.due_date,
+            isRead: false,
+            isDismissed: false,
+            actionable: true,
+            amount: Number(payable.amount),
+          });
+        }
       });
     }
 
     // Check for payables due soon
     if (alertSettings.dueSoonPayables) {
-      const dueSoonPayables = groupPayables.filter(p => {
-        const dueDate = parseISO(p.dueDate);
-        return !p.isPaid && dueDate >= today && dueDate <= next7Days;
+      const dueSoonPayables = payables.filter(p => {
+        const dueDate = parseISO(p.due_date);
+        return !p.is_paid && dueDate >= today && dueDate <= next7Days;
       });
 
       dueSoonPayables.forEach(payable => {
-        alerts.push({
-          id: `due-soon-${payable.id}`,
-          type: 'due-soon',
-          title: 'Conta Vence em Breve',
-          description: `${payable.description} vence em ${format(parseISO(payable.dueDate), 'dd/MM/yyyy')}`,
-          severity: 'medium',
-          date: payable.dueDate,
-          isRead: false,
-          actionable: true,
-          amount: payable.amount,
-        });
+        const alertId = `due-soon-${payable.id}`;
+        if (!dismissedAlerts.includes(alertId)) {
+          alerts.push({
+            id: alertId,
+            type: 'due-soon',
+            title: 'Conta Vence em Breve',
+            description: `${payable.title} vence em ${format(parseISO(payable.due_date), 'dd/MM/yyyy')}`,
+            severity: 'medium',
+            date: payable.due_date,
+            isRead: false,
+            isDismissed: false,
+            actionable: true,
+            amount: Number(payable.amount),
+          });
+        }
       });
     }
 
@@ -91,30 +112,32 @@ export default function Alerts() {
       const monthStart = startOfMonth(today);
       const monthEnd = endOfMonth(today);
       
-      const monthlyExpenses = groupTransactions
-        .filter(t => {
-          const transactionDate = parseISO(t.date);
-          return t.type === 'expense' && 
-                 transactionDate >= monthStart && 
-                 transactionDate <= monthEnd;
+      const monthlyExpenses = expenses
+        .filter(e => {
+          const expenseDate = parseISO(e.date);
+          return expenseDate >= monthStart && expenseDate <= monthEnd;
         })
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, e) => sum + Number(e.amount), 0);
 
       const budgetLimit = 5000; // Example budget
       const budgetUsed = (monthlyExpenses / budgetLimit) * 100;
 
       if (budgetUsed > 80) {
-        alerts.push({
-          id: 'budget-warning',
-          type: 'budget',
-          title: budgetUsed > 100 ? 'Orçamento Estourado!' : 'Orçamento Quase no Limite',
-          description: `Você já gastou ${formatCurrency(monthlyExpenses)} de ${formatCurrency(budgetLimit)} este mês (${budgetUsed.toFixed(1)}%)`,
-          severity: budgetUsed > 100 ? 'critical' : 'high',
-          date: today.toISOString(),
-          isRead: false,
-          actionable: true,
-          amount: monthlyExpenses,
-        });
+        const alertId = 'budget-warning';
+        if (!dismissedAlerts.includes(alertId)) {
+          alerts.push({
+            id: alertId,
+            type: 'budget',
+            title: budgetUsed > 100 ? 'Orçamento Estourado!' : 'Orçamento Quase no Limite',
+            description: `Você já gastou ${formatCurrency(monthlyExpenses)} de ${formatCurrency(budgetLimit)} este mês (${budgetUsed.toFixed(1)}%)`,
+            severity: budgetUsed > 100 ? 'critical' : 'high',
+            date: today.toISOString(),
+            isRead: false,
+            isDismissed: false,
+            actionable: true,
+            amount: monthlyExpenses,
+          });
+        }
       }
     }
 
@@ -123,53 +146,57 @@ export default function Alerts() {
       const monthStart = startOfMonth(today);
       const monthEnd = endOfMonth(today);
       
-      const monthlyIncome = groupTransactions
-        .filter(t => {
-          const transactionDate = parseISO(t.date);
-          return t.type === 'income' && 
-                 transactionDate >= monthStart && 
-                 transactionDate <= monthEnd;
+      const monthlyIncome = income
+        .filter(i => {
+          const incomeDate = parseISO(i.date);
+          return incomeDate >= monthStart && incomeDate <= monthEnd;
         })
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, i) => sum + Number(i.amount), 0);
 
       const savingsGoal = 2000; // Example savings goal
-      const monthlyExpenses = groupTransactions
-        .filter(t => {
-          const transactionDate = parseISO(t.date);
-          return t.type === 'expense' && 
-                 transactionDate >= monthStart && 
-                 transactionDate <= monthEnd;
+      const monthlyExpenses = expenses
+        .filter(e => {
+          const expenseDate = parseISO(e.date);
+          return expenseDate >= monthStart && expenseDate <= monthEnd;
         })
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, e) => sum + Number(e.amount), 0);
 
       const actualSavings = monthlyIncome - monthlyExpenses;
       
       if (actualSavings < savingsGoal) {
-        alerts.push({
-          id: 'savings-goal',
-          type: 'goal',
-          title: 'Meta de Economia em Risco',
-          description: `Economia atual: ${formatCurrency(actualSavings)}. Meta: ${formatCurrency(savingsGoal)}`,
-          severity: 'medium',
-          date: today.toISOString(),
-          isRead: false,
-          actionable: false,
-        });
+        const alertId = 'savings-goal';
+        if (!dismissedAlerts.includes(alertId)) {
+          alerts.push({
+            id: alertId,
+            type: 'goal',
+            title: 'Meta de Economia em Risco',
+            description: `Economia atual: ${formatCurrency(actualSavings)}. Meta: ${formatCurrency(savingsGoal)}`,
+            severity: 'medium',
+            date: today.toISOString(),
+            isRead: false,
+            isDismissed: false,
+            actionable: false,
+          });
+        }
       }
     }
 
     // System notifications
     if (alertSettings.systemNotifications) {
-      alerts.push({
-        id: 'system-backup',
-        type: 'system',
-        title: 'Backup Recomendado',
-        description: 'Faça backup dos seus dados financeiros regularmente para manter suas informações seguras.',
-        severity: 'low',
-        date: today.toISOString(),
-        isRead: false,
-        actionable: false,
-      });
+      const alertId = 'system-backup';
+      if (!dismissedAlerts.includes(alertId)) {
+        alerts.push({
+          id: alertId,
+          type: 'system',
+          title: 'Backup Recomendado',
+          description: 'Faça backup dos seus dados financeiros regularmente para manter suas informações seguras.',
+          severity: 'low',
+          date: today.toISOString(),
+          isRead: false,
+          isDismissed: false,
+          actionable: false,
+        });
+      }
     }
 
     return alerts.sort((a, b) => {
@@ -186,9 +213,19 @@ export default function Alerts() {
   const filteredAlerts = showOnlyUnread ? currentAlerts.filter(alert => !alert.isRead) : currentAlerts;
 
   const markAsRead = (alertId: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId ? { ...alert, isRead: true } : alert
-    ));
+    // In a real app, this would update the backend
+    toast({
+      title: "Alerta marcado como lido",
+      description: "O alerta foi marcado como lido.",
+    });
+  };
+
+  const dismissAlert = (alertId: string) => {
+    setDismissedAlerts(prev => [...prev, alertId]);
+    toast({
+      title: "Alerta removido",
+      description: "O alerta foi removido da sua lista.",
+    });
   };
 
   const getSeverityColor = (severity: Alert['severity']) => {
@@ -481,6 +518,31 @@ export default function Alerts() {
                               Marcar como lido
                             </Button>
                           )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remover Alerta</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja remover este alerta?
+                                  Ele não aparecerá mais na sua lista.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => dismissAlert(alert.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Remover
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>

@@ -1,6 +1,8 @@
+
 import { useState } from 'react';
-import { Plus, Search, Filter, Calendar, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
+import { Plus, Search, Filter, Calendar, CheckCircle, XCircle, Clock, AlertTriangle, Trash2 } from 'lucide-react';
+import { usePayables } from '@/hooks/usePayables';
+import { useCategories } from '@/hooks/useCategories';
 import { PayableForm } from '@/components/forms/PayableForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,38 +10,36 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { format, parseISO, isAfter, isBefore, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Payables() {
-  const { payables, setPayables, categories, formatCurrency, selectedGroup } = useApp();
-  const { toast } = useToast();
+  const { payables, loading, updatePayable, deletePayable } = usePayables();
+  const { categories } = useCategories();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  // Filter payables by selected group
-  const filteredPayables = payables.filter(payable => payable.group === selectedGroup);
-
-  // Apply additional filters
-  const processedPayables = filteredPayables.filter(payable => {
-    const matchesSearch = payable.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || payable.category === selectedCategory;
+  // Apply filters
+  const filteredPayables = payables.filter(payable => {
+    const matchesSearch = payable.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (payable.description && payable.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'all' || payable.category_id === selectedCategory;
     
     let matchesStatus = true;
-    if (statusFilter === 'paid') matchesStatus = payable.isPaid;
-    if (statusFilter === 'pending') matchesStatus = !payable.isPaid;
+    if (statusFilter === 'paid') matchesStatus = payable.is_paid || false;
+    if (statusFilter === 'pending') matchesStatus = !(payable.is_paid || false);
     if (statusFilter === 'overdue') {
-      const dueDate = parseISO(payable.dueDate);
-      matchesStatus = !payable.isPaid && isBefore(dueDate, new Date());
+      const dueDate = parseISO(payable.due_date);
+      matchesStatus = !(payable.is_paid || false) && isBefore(dueDate, new Date());
     }
     if (statusFilter === 'due-soon') {
-      const dueDate = parseISO(payable.dueDate);
+      const dueDate = parseISO(payable.due_date);
       const next7Days = addDays(new Date(), 7);
-      matchesStatus = !payable.isPaid && isAfter(dueDate, new Date()) && isBefore(dueDate, next7Days);
+      matchesStatus = !(payable.is_paid || false) && isAfter(dueDate, new Date()) && isBefore(dueDate, next7Days);
     }
 
     return matchesSearch && matchesCategory && matchesStatus;
@@ -47,42 +47,46 @@ export default function Payables() {
 
   // Calculate statistics
   const stats = {
-    total: filteredPayables.length,
-    paid: filteredPayables.filter(p => p.isPaid).length,
-    pending: filteredPayables.filter(p => !p.isPaid).length,
-    overdue: filteredPayables.filter(p => {
-      const dueDate = parseISO(p.dueDate);
-      return !p.isPaid && isBefore(dueDate, new Date());
+    total: payables.length,
+    paid: payables.filter(p => p.is_paid).length,
+    pending: payables.filter(p => !p.is_paid).length,
+    overdue: payables.filter(p => {
+      const dueDate = parseISO(p.due_date);
+      return !p.is_paid && isBefore(dueDate, new Date());
     }).length,
-    totalAmount: filteredPayables.reduce((sum, p) => sum + p.amount, 0),
-    pendingAmount: filteredPayables.filter(p => !p.isPaid).reduce((sum, p) => sum + p.amount, 0),
+    totalAmount: payables.reduce((sum, p) => sum + Number(p.amount), 0),
+    pendingAmount: payables.filter(p => !p.is_paid).reduce((sum, p) => sum + Number(p.amount), 0),
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(amount);
   };
 
   const handleFormSuccess = () => {
     setIsFormOpen(false);
   };
 
-  const togglePaymentStatus = (payableId: string) => {
-    const updatedPayables = payables.map(payable => 
-      payable.id === payableId 
-        ? { ...payable, isPaid: !payable.isPaid }
-        : payable
-    );
-    setPayables(updatedPayables);
-    
+  const togglePaymentStatus = async (payableId: string) => {
     const payable = payables.find(p => p.id === payableId);
     if (payable) {
-      toast({
-        title: payable.isPaid ? 'Conta marcada como pendente' : 'Conta marcada como paga',
-        description: `${payable.description} - ${formatCurrency(payable.amount)}`,
+      await updatePayable(payableId, { 
+        is_paid: !payable.is_paid,
+        paid_date: !payable.is_paid ? new Date().toISOString().split('T')[0] : null
       });
     }
   };
 
+  const handleDelete = async (id: string) => {
+    await deletePayable(id);
+  };
+
   const getPayableStatus = (payable: typeof payables[0]) => {
-    if (payable.isPaid) return { text: 'Pago', variant: 'default' as const, icon: CheckCircle };
+    if (payable.is_paid) return { text: 'Pago', variant: 'default' as const, icon: CheckCircle };
     
-    const dueDate = parseISO(payable.dueDate);
+    const dueDate = parseISO(payable.due_date);
     const today = new Date();
     const next7Days = addDays(today, 7);
     
@@ -97,11 +101,23 @@ export default function Payables() {
     return { text: 'Pendente', variant: 'outline' as const, icon: Clock };
   };
 
-  const getCategoryName = (categoryId: string) => {
-    return categories.find(cat => cat.id === categoryId)?.name || 'Sem categoria';
-  };
+  // Get expense categories
+  const expenseCategories = categories.filter(category => 
+    category.name.toLowerCase().includes('despesa') || 
+    category.name.toLowerCase().includes('conta') ||
+    category.name.toLowerCase().includes('pagamento')
+  );
 
-  const expenseCategories = categories.filter(category => category.type === 'expense');
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando contas a pagar...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -152,7 +168,7 @@ export default function Payables() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalAmount)}</div>
             <p className="text-xs text-muted-foreground">
-              Todas as contas do grupo
+              Todas as contas
             </p>
           </CardContent>
         </Card>
@@ -244,7 +260,7 @@ export default function Payables() {
           <CardTitle className="text-lg">Lista de Contas a Pagar</CardTitle>
         </CardHeader>
         <CardContent>
-          {processedPayables.length === 0 ? (
+          {filteredPayables.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Nenhuma conta encontrada</h3>
@@ -270,10 +286,11 @@ export default function Payables() {
             </div>
           ) : (
             <div className="space-y-4">
-              {processedPayables.map((payable) => {
+              {filteredPayables.map((payable) => {
                 const status = getPayableStatus(payable);
                 const StatusIcon = status.icon;
-                const dueDate = parseISO(payable.dueDate);
+                const dueDate = parseISO(payable.due_date);
+                const category = categories.find(cat => cat.id === payable.category_id);
                 
                 return (
                   <div
@@ -283,20 +300,25 @@ export default function Payables() {
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-medium">{payable.description}</h3>
+                          <h3 className="font-medium">{payable.title}</h3>
                           <div className="flex flex-wrap items-center gap-2 mt-1">
                             <Badge variant="secondary">
-                              {getCategoryName(payable.category)}
+                              {category?.name || 'Sem categoria'}
                             </Badge>
                             <Badge variant={status.variant} className="flex items-center gap-1">
                               <StatusIcon className="h-3 w-3" />
                               {status.text}
                             </Badge>
                           </div>
+                          {payable.description && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {payable.description}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right sm:hidden">
                           <div className="text-lg font-semibold">
-                            {formatCurrency(payable.amount)}
+                            {formatCurrency(Number(payable.amount))}
                           </div>
                         </div>
                       </div>
@@ -306,10 +328,10 @@ export default function Payables() {
                           <Calendar className="h-4 w-4" />
                           Vencimento: {format(dueDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </div>
-                        {!payable.isPaid && (
+                        {!payable.is_paid && (
                           <div className="flex items-center gap-2">
                             <Switch
-                              checked={payable.isPaid}
+                              checked={payable.is_paid || false}
                               onCheckedChange={() => togglePaymentStatus(payable.id)}
                             />
                             <span className="text-xs">Marcar como pago</span>
@@ -318,20 +340,47 @@ export default function Payables() {
                       </div>
                     </div>
                     
-                    <div className="hidden sm:block text-right">
-                      <div className="text-lg font-semibold">
-                        {formatCurrency(payable.amount)}
+                    <div className="hidden sm:flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-lg font-semibold">
+                          {formatCurrency(Number(payable.amount))}
+                        </div>
+                        {payable.is_paid && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => togglePaymentStatus(payable.id)}
+                            className="mt-2"
+                          >
+                            Marcar como pendente
+                          </Button>
+                        )}
                       </div>
-                      {payable.isPaid && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => togglePaymentStatus(payable.id)}
-                          className="mt-2"
-                        >
-                          Marcar como pendente
-                        </Button>
-                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir a conta "{payable.title}"?
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDelete(payable.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 );

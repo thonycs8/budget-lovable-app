@@ -1,44 +1,66 @@
+
 import { useState } from 'react';
-import { Plus, Search, Filter, DollarSign } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-import { TransactionForm } from '@/components/forms/TransactionForm';
+import { Plus, Search, Filter, DollarSign, Trash2 } from 'lucide-react';
+import { useIncome } from '@/hooks/useIncome';
+import { useCategories } from '@/hooks/useCategories';
+import { IncomeForm } from '@/components/forms/IncomeForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
 
 export default function Income() {
-  const { transactions, categories, formatCurrency, selectedGroup } = useApp();
+  const { income, loading, deleteIncome } = useIncome();
+  const { categories } = useCategories();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  // Filter income transactions
-  const incomeTransactions = transactions.filter(
-    transaction => 
-      transaction.type === 'income' && 
-      transaction.group === selectedGroup
-  );
-
   // Apply filters
-  const filteredTransactions = incomeTransactions.filter(transaction => {
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || transaction.category === selectedCategory;
+  const filteredIncome = income.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'all' || item.category_id === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   // Calculate total income
-  const totalIncome = incomeTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const totalIncome = income.reduce((sum, item) => sum + Number(item.amount), 0);
 
   // Get income categories
-  const incomeCategories = categories.filter(category => category.type === 'income');
+  const incomeCategories = categories.filter(category => category.name.toLowerCase().includes('receita') || 
+                                           category.name.toLowerCase().includes('renda') ||
+                                           category.name.toLowerCase().includes('salário'));
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(amount);
+  };
 
   const handleFormSuccess = () => {
     setIsFormOpen(false);
   };
+
+  const handleDelete = async (id: string) => {
+    await deleteIncome(id);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando receitas...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -61,7 +83,7 @@ export default function Income() {
             <DialogHeader>
               <DialogTitle>Adicionar Nova Receita</DialogTitle>
             </DialogHeader>
-            <TransactionForm type="income" onSuccess={handleFormSuccess} />
+            <IncomeForm onSuccess={handleFormSuccess} />
           </DialogContent>
         </Dialog>
       </div>
@@ -77,7 +99,7 @@ export default function Income() {
             {formatCurrency(totalIncome)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {incomeTransactions.length} receita(s) no grupo {selectedGroup}
+            {income.length} receita(s) cadastrada(s)
           </p>
         </CardContent>
       </Card>
@@ -120,18 +142,18 @@ export default function Income() {
         </CardContent>
       </Card>
 
-      {/* Transactions List */}
+      {/* Income List */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Lista de Receitas</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredTransactions.length === 0 ? (
+          {filteredIncome.length === 0 ? (
             <div className="text-center py-8">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Nenhuma receita encontrada</h3>
               <p className="text-muted-foreground mb-4">
-                {searchTerm || selectedCategory !== 'all' 
+                {searchTerm || selectedCategory !== 'all'
                   ? 'Tente ajustar os filtros ou adicione uma nova receita.'
                   : 'Comece adicionando sua primeira receita.'}
               </p>
@@ -146,39 +168,66 @@ export default function Income() {
                   <DialogHeader>
                     <DialogTitle>Adicionar Nova Receita</DialogTitle>
                   </DialogHeader>
-                  <TransactionForm type="income" onSuccess={handleFormSuccess} />
+                  <IncomeForm onSuccess={handleFormSuccess} />
                 </DialogContent>
               </Dialog>
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredTransactions.map((transaction) => {
-                const category = categories.find(cat => cat.id === transaction.category);
+              {filteredIncome.map((item) => {
+                const category = categories.find(cat => cat.id === item.category_id);
                 return (
                   <div
-                    key={transaction.id}
+                    key={item.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-medium">{transaction.description}</h3>
+                        <h3 className="font-medium">{item.title}</h3>
                         <Badge variant="secondary">
                           {category?.name || 'Sem categoria'}
                         </Badge>
-                        {transaction.subcategory && (
-                          <Badge variant="outline" className="text-xs">
-                            {transaction.subcategory}
-                          </Badge>
-                        )}
                       </div>
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {item.description}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">
-                        {format(parseISO(transaction.date), 'dd/MM/yyyy')}
+                        {format(parseISO(item.date), 'dd/MM/yyyy')}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-emerald-600">
-                        {formatCurrency(transaction.amount)}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-emerald-600">
+                          {formatCurrency(Number(item.amount))}
+                        </div>
                       </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir a receita "{item.title}"?
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDelete(item.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 );
