@@ -17,9 +17,11 @@ interface IncomeFormProps {
 
 export default function IncomeForm({ isOpen, onClose, income }: IncomeFormProps) {
   const { createIncome, updateIncome } = useIncome();
-  const { categories } = useCategories();
+  const { categories, loading: categoriesLoading } = useCategories();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  
+  console.log('IncomeForm - Categories:', categories, 'Loading:', categoriesLoading);
   
   const [formData, setFormData] = useState({
     title: income?.title || '',

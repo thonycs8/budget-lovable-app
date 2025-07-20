@@ -17,9 +17,11 @@ interface ExpenseFormProps {
 
 export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormProps) {
   const { createExpense, updateExpense } = useExpenses();
-  const { categories } = useCategories();
+  const { categories, loading: categoriesLoading } = useCategories();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  
+  console.log('ExpenseForm - Categories:', categories, 'Loading:', categoriesLoading);
   
   const [formData, setFormData] = useState({
     title: expense?.title || '',
