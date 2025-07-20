@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Plus, Search, Filter, DollarSign, Trash2 } from 'lucide-react';
 import { useIncome } from '@/hooks/useIncome';
 import { useCategories } from '@/hooks/useCategories';
-import { IncomeForm } from '@/components/forms/IncomeForm';
+import IncomeForm from '@/components/forms/IncomeForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,7 +83,7 @@ export default function Income() {
             <DialogHeader>
               <DialogTitle>Adicionar Nova Receita</DialogTitle>
             </DialogHeader>
-            <IncomeForm onSuccess={handleFormSuccess} />
+            <IncomeForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -168,7 +168,7 @@ export default function Income() {
                   <DialogHeader>
                     <DialogTitle>Adicionar Nova Receita</DialogTitle>
                   </DialogHeader>
-                  <IncomeForm onSuccess={handleFormSuccess} />
+                  <IncomeForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
                 </DialogContent>
               </Dialog>
             </div>

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Plus, TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, ArrowUpRight, ArrowDownRight, Trash2 } from 'lucide-react';
 import { useInvestments } from '@/hooks/useInvestments';
-import { InvestmentForm } from '@/components/forms/InvestmentForm';
+import InvestmentForm from '@/components/forms/InvestmentForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,7 +117,7 @@ export default function Investments() {
             <DialogHeader>
               <DialogTitle>Adicionar Novo Investimento</DialogTitle>
             </DialogHeader>
-            <InvestmentForm onSuccess={handleFormSuccess} />
+            <InvestmentForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -243,7 +243,7 @@ export default function Investments() {
                   <DialogHeader>
                     <DialogTitle>Adicionar Novo Investimento</DialogTitle>
                   </DialogHeader>
-                  <InvestmentForm onSuccess={handleFormSuccess} />
+                  <InvestmentForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
                 </DialogContent>
               </Dialog>
             </div>

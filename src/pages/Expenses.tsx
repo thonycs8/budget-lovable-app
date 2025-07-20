@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Plus, Search, Filter, TrendingDown, Trash2 } from 'lucide-react';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useCategories } from '@/hooks/useCategories';
-import { ExpenseForm } from '@/components/forms/ExpenseForm';
+import ExpenseForm from '@/components/forms/ExpenseForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,7 +85,7 @@ export default function Expenses() {
             <DialogHeader>
               <DialogTitle>Adicionar Nova Despesa</DialogTitle>
             </DialogHeader>
-            <ExpenseForm onSuccess={handleFormSuccess} />
+            <ExpenseForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -170,7 +170,7 @@ export default function Expenses() {
                   <DialogHeader>
                     <DialogTitle>Adicionar Nova Despesa</DialogTitle>
                   </DialogHeader>
-                  <ExpenseForm onSuccess={handleFormSuccess} />
+                  <ExpenseForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
                 </DialogContent>
               </Dialog>
             </div>
