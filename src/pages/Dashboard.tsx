@@ -1,6 +1,7 @@
 import { DollarSign, TrendingUp, TrendingDown, PiggyBank, AlertTriangle, Target } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CategoryChart } from '@/components/dashboard/CategoryChart';
+import { BalancePrediction } from '@/components/dashboard/BalancePrediction';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -332,6 +333,9 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Balance Prediction Section */}
+      <BalancePrediction />
 
       {/* Recent Transactions */}
       <Card className="animate-in fade-in duration-700 delay-500 hover:shadow-lg transition-shadow">

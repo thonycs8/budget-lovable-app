@@ -1,1 +1,7 @@
 project_id = "lvtvlwvnraifewcocecq"
+
+[functions.generate-predictions]
+verify_jwt = true
+
+[functions.predict-balance]
+verify_jwt = true
