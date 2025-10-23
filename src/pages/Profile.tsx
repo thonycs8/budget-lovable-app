@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PhoneInput } from '@/components/ui/phone-input';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency, CURRENCIES, type Currency } from '@/hooks/useCurrency';
-import { User, Mail, Save, Globe } from 'lucide-react';
+import { useTheme, type ThemeTemplate } from '@/hooks/useTheme';
+import { User, Mail, Save, Globe, Palette } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -26,6 +27,7 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { currency, setCurrency, getCurrencyName, formatCurrency } = useCurrency();
+  const { theme, setTheme, getThemeName, templates } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,6 +42,14 @@ export default function Profile() {
     toast({
       title: 'Moeda atualizada',
       description: `Moeda alterada para ${CURRENCIES[newCurrency].name}`,
+    });
+  };
+
+  const handleThemeChange = (newTheme: ThemeTemplate) => {
+    setTheme(newTheme);
+    toast({
+      title: 'Tema atualizado',
+      description: `Tema alterado para ${getThemeName(newTheme)}`,
     });
   };
 
@@ -192,46 +202,75 @@ export default function Profile() {
 
           <Separator className="my-6" />
 
-          <div className="space-y-4">
-            <h3 className="font-medium flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Preferências Regionais
-            </h3>
-            <div className="space-y-2">
-              <Label htmlFor="currency">Moeda</Label>
-              <Select value={currency} onValueChange={handleCurrencyChange}>
-                <SelectTrigger id="currency">
-                  <SelectValue>
-                    {CURRENCIES[currency].symbol} {CURRENCIES[currency].name}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EUR">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">€</span>
-                      <span>Euro (EUR)</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="BRL">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">R$</span>
-                      <span>Real Brasileiro (BRL)</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="USD">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">$</span>
-                      <span>Dólar Americano (USD)</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                Todos os valores serão exibidos em {getCurrencyName()}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Exemplo: {formatCurrency(1234.56)}
-              </p>
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-medium flex items-center gap-2 mb-4">
+                <Palette className="h-5 w-5" />
+                Aparência
+              </h3>
+              <div className="space-y-2">
+                <Label htmlFor="theme">Tema de Cores</Label>
+                <Select value={theme} onValueChange={handleThemeChange}>
+                  <SelectTrigger id="theme">
+                    <SelectValue>
+                      {getThemeName(theme)}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    {templates.map((template) => (
+                      <SelectItem key={template} value={template}>
+                        {getThemeName(template)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Escolha o tema de cores que mais combina com você
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-medium flex items-center gap-2 mb-4">
+                <Globe className="h-5 w-5" />
+                Preferências Regionais
+              </h3>
+              <div className="space-y-2">
+                <Label htmlFor="currency">Moeda</Label>
+                <Select value={currency} onValueChange={handleCurrencyChange}>
+                  <SelectTrigger id="currency">
+                    <SelectValue>
+                      {CURRENCIES[currency].symbol} {CURRENCIES[currency].name}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="EUR">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">€</span>
+                        <span>Euro (EUR)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BRL">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">R$</span>
+                        <span>Real Brasileiro (BRL)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="USD">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">$</span>
+                        <span>Dólar Americano (USD)</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Todos os valores serão exibidos em {getCurrencyName()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Exemplo: {formatCurrency(1234.56)}
+                </p>
+              </div>
             </div>
           </div>
 
