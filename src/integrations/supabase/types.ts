@@ -374,6 +374,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          budget_alerts: boolean | null
+          created_at: string
+          date_format: string | null
+          email_notifications: boolean | null
+          id: string
+          investment_alerts: boolean | null
+          language: string | null
+          number_format: string | null
+          payment_reminders: boolean | null
+          push_notifications: boolean | null
+          updated_at: string
+          user_id: string
+          weekly_summary: boolean | null
+        }
+        Insert: {
+          budget_alerts?: boolean | null
+          created_at?: string
+          date_format?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          investment_alerts?: boolean | null
+          language?: string | null
+          number_format?: string | null
+          payment_reminders?: boolean | null
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id: string
+          weekly_summary?: boolean | null
+        }
+        Update: {
+          budget_alerts?: boolean | null
+          created_at?: string
+          date_format?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          investment_alerts?: boolean | null
+          language?: string | null
+          number_format?: string | null
+          payment_reminders?: boolean | null
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id?: string
+          weekly_summary?: boolean | null
+        }
+        Relationships: []
+      }
       workouts: {
         Row: {
           created_at: string | null
