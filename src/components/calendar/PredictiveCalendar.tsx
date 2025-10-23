@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,10 +68,30 @@ export function PredictiveCalendar() {
     ? eventsByDate.get(selectedDate.toISOString().split('T')[0]) || []
     : [];
 
-  const getDayEvents = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return eventsByDate.get(dateStr) || [];
-  };
+  // Memoize day styles to prevent infinite re-renders
+  const dayModifiers = useMemo(() => {
+    const hasExpense = new Set<string>();
+    const hasIncome = new Set<string>();
+    const hasPrediction = new Set<string>();
+    const hasOverdue = new Set<string>();
+
+    eventsByDate.forEach((events, dateStr) => {
+      if (events.some(e => e.type === 'expense' && e.source === 'confirmed')) {
+        hasExpense.add(dateStr);
+      }
+      if (events.some(e => e.type === 'income' && e.source === 'confirmed')) {
+        hasIncome.add(dateStr);
+      }
+      if (events.some(e => e.type === 'prediction')) {
+        hasPrediction.add(dateStr);
+      }
+      if (events.some(e => e.type === 'payable' && !e.isPaid && new Date(e.due_date) < new Date())) {
+        hasOverdue.add(dateStr);
+      }
+    });
+
+    return { hasExpense, hasIncome, hasPrediction, hasOverdue };
+  }, [eventsByDate]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -134,10 +154,10 @@ export function PredictiveCalendar() {
               onSelect={setSelectedDate}
               className="rounded-lg border"
               modifiers={{
-                hasExpense: (date) => getDayEvents(date).some(e => e.type === 'expense' && e.source === 'confirmed'),
-                hasIncome: (date) => getDayEvents(date).some(e => e.type === 'income' && e.source === 'confirmed'),
-                hasPrediction: (date) => getDayEvents(date).some(e => e.type === 'prediction'),
-                hasOverdue: (date) => getDayEvents(date).some(e => e.type === 'payable' && !e.isPaid && new Date(e.due_date) < new Date()),
+                hasExpense: (date) => dayModifiers.hasExpense.has(date.toISOString().split('T')[0]),
+                hasIncome: (date) => dayModifiers.hasIncome.has(date.toISOString().split('T')[0]),
+                hasPrediction: (date) => dayModifiers.hasPrediction.has(date.toISOString().split('T')[0]),
+                hasOverdue: (date) => dayModifiers.hasOverdue.has(date.toISOString().split('T')[0]),
               }}
               modifiersClassNames={{
                 hasOverdue: 'bg-destructive/20 font-bold',

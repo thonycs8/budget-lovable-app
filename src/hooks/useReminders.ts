@@ -70,10 +70,6 @@ export const useReminders = () => {
   useEffect(() => {
     if (user) {
       fetchReminders();
-      
-      // Refresh reminders every minute
-      const interval = setInterval(fetchReminders, 60000);
-      return () => clearInterval(interval);
     }
   }, [user]);
 
