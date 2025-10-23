@@ -1,8 +1,8 @@
-import { PredictiveCalendar } from '@/components/calendar/PredictiveCalendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RecurringExpenseForm } from '@/components/forms/RecurringExpenseForm';
-import { Plus } from 'lucide-react';
+import { Plus, Construction } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Calendar() {
@@ -36,7 +36,20 @@ export default function Calendar() {
         </Dialog>
       </div>
 
-      <PredictiveCalendar />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Construction className="h-5 w-5 text-warning" />
+            Calendário em Manutenção
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            O calendário preditivo está temporariamente desabilitado enquanto corrigimos alguns problemas técnicos.
+            Por favor, volte mais tarde.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
