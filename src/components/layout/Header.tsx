@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -21,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePayables } from '@/hooks/usePayables';
 import { User, LogOut, Home, Menu, BarChart3, TrendingUp, TrendingDown, Tags, CreditCard, PiggyBank, Calendar, Bell, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ExpenseForm from '@/components/forms/ExpenseForm';
@@ -45,10 +47,18 @@ type DialogType = 'expense' | 'income' | 'category' | 'payable' | 'investment' |
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const { payables } = usePayables();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+
+  // Calculate overdue payables
+  const overduePayables = payables.filter(p => {
+    const dueDate = new Date(p.due_date);
+    const today = new Date();
+    return !p.is_paid && dueDate < today;
+  });
 
   const getInitials = () => {
     if (user?.user_metadata?.full_name) {
@@ -330,12 +340,17 @@ export function Header() {
                   <NavigationMenuLink
                     onClick={() => navigate('/alerts')}
                     className={cn(
-                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer hover-scale",
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer hover-scale relative",
                       location.pathname === '/alerts' && "bg-accent"
                     )}
                   >
                     <Bell className="mr-2 h-4 w-4" />
                     Alertas
+                    {overduePayables.length > 0 && (
+                      <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
+                        {overduePayables.length}
+                      </Badge>
+                    )}
                   </NavigationMenuLink>
                 </NavigationMenuItem>
 
