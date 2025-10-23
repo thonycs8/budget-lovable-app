@@ -68,7 +68,7 @@ const Index = () => {
   const ActiveComponent = pageComponents[activeTab as keyof typeof pageComponents] || Dashboard;
 
   return (
-    <div className="min-h-screen w-full flex bg-background">
+    <div className="flex-1 w-full flex bg-background">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 md:ml-0 ml-0">
         <div className="p-6 pt-16 md:pt-6">

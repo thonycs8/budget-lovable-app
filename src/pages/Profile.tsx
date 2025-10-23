@@ -8,9 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency, CURRENCIES, type Currency } from '@/hooks/useCurrency';
-import { User, Mail, Phone, Save, Globe } from 'lucide-react';
+import { User, Mail, Save, Globe } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -117,8 +118,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto py-8 max-w-2xl">
-      <Card>
+    <div className="flex-1 w-full">
+      <div className="container mx-auto py-8 max-w-2xl">
+        <Card>
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Avatar className="h-20 w-20">
@@ -163,16 +165,14 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Telefone
-              </Label>
-              <Input
-                id="phone"
+              <Label htmlFor="phone">Telefone</Label>
+              <PhoneInput
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="(11) 99999-9999"
+                onChange={(value) => setFormData({ ...formData, phone: value })}
               />
+              <p className="text-xs text-muted-foreground">
+                Selecione o país e digite o número de telefone
+              </p>
             </div>
 
             <Button type="submit" className="w-full" disabled={saving}>
@@ -240,6 +240,7 @@ export default function Profile() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
