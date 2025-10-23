@@ -15,7 +15,7 @@ export function BalancePrediction() {
 
   useEffect(() => {
     generatePredictions(daysAhead);
-  }, []);
+  }, [daysAhead, generatePredictions]);
 
   const handleGenerate = () => {
     generatePredictions(daysAhead);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -28,7 +28,7 @@ export const useBalancePrediction = () => {
   const [modelStats, setModelStats] = useState<ModelStats | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const generatePredictions = async (daysAhead: number = 30) => {
+  const generatePredictions = useCallback(async (daysAhead: number = 30) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('predict-balance', {
@@ -53,7 +53,7 @@ export const useBalancePrediction = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     predictions,
