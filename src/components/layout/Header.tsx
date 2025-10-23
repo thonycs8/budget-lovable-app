@@ -1,8 +1,17 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +21,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Home, Menu, BarChart3, TrendingUp, TrendingDown, Tags, CreditCard, PiggyBank, Calendar, Bell, Settings } from 'lucide-react';
+import { User, LogOut, Home, Menu, BarChart3, TrendingUp, TrendingDown, Tags, CreditCard, PiggyBank, Calendar, Bell, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ExpenseForm from '@/components/forms/ExpenseForm';
+import IncomeForm from '@/components/forms/IncomeForm';
+import NewCategoryForm from '@/components/forms/NewCategoryForm';
+import { PayableForm } from '@/components/forms/PayableForm';
+import InvestmentForm from '@/components/forms/InvestmentForm';
 
 const menuItems = [
   { id: '/', label: 'Dashboard', icon: BarChart3 },
@@ -27,10 +41,14 @@ const menuItems = [
   { id: '/settings', label: 'Configurações', icon: Settings },
 ];
 
+type DialogType = 'expense' | 'income' | 'category' | 'payable' | 'investment' | null;
+
 export function Header() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
 
   const getInitials = () => {
     if (user?.user_metadata?.full_name) {
@@ -47,10 +65,15 @@ export function Header() {
     setMobileMenuOpen(false);
   };
 
+  const handleDialogSuccess = () => {
+    setActiveDialog(null);
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+    <>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-6">
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
@@ -102,32 +125,212 @@ export function Header() {
             </SheetContent>
           </Sheet>
 
-          {/* Logo */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 hover-scale transition-all duration-200"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-              <span className="text-lg font-bold">G</span>
-            </div>
-            <span className="hidden font-semibold sm:inline-block">GestFin</span>
-          </Button>
-        </div>
+            {/* Logo */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 hover-scale transition-all duration-200"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+                <span className="text-lg font-bold">G</span>
+              </div>
+              <span className="hidden font-semibold lg:inline-block">GestFin</span>
+            </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="hidden sm:flex hover-scale transition-all duration-200"
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Início
-          </Button>
+            {/* Desktop Navigation Menu */}
+            <NavigationMenu className="hidden lg:flex">
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="hover-scale">Financeiro</NavigationMenuTrigger>
+                  <NavigationMenuContent className="bg-background">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => navigate('/income')}
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer",
+                              location.pathname === '/income' && "bg-accent"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Receitas</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Gerencie suas fontes de renda
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => navigate('/expenses')}
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer",
+                              location.pathname === '/expenses' && "bg-accent"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <TrendingDown className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Despesas</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Controle seus gastos
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => navigate('/payables')}
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer",
+                              location.pathname === '/payables' && "bg-accent"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Contas a Pagar</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Acompanhe seus compromissos
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => navigate('/investments')}
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer",
+                              location.pathname === '/investments' && "bg-accent"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <PiggyBank className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Investimentos</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Gerencie seu patrimônio
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
-          <DropdownMenu>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="hover-scale">Adicionar</NavigationMenuTrigger>
+                  <NavigationMenuContent className="bg-background">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => setActiveDialog('income')}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Nova Receita</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Registrar nova entrada
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => setActiveDialog('expense')}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Nova Despesa</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Registrar novo gasto
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => setActiveDialog('payable')}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Nova Conta</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Adicionar conta a pagar
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => setActiveDialog('investment')}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Novo Investimento</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Registrar investimento
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            onClick={() => setActiveDialog('category')}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">Nova Categoria</div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Criar nova categoria
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    onClick={() => navigate('/calendar')}
+                    className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer hover-scale",
+                      location.pathname === '/calendar' && "bg-accent"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Calendário
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full hover-scale transition-all duration-200">
                 <Avatar className="h-10 w-10 border-2 border-primary/20">
@@ -163,9 +366,40 @@ export function Header() {
                 <span>Sair</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Dialogs for quick actions */}
+      <ExpenseForm 
+        isOpen={activeDialog === 'expense'} 
+        onClose={() => setActiveDialog(null)} 
+      />
+
+      <IncomeForm 
+        isOpen={activeDialog === 'income'} 
+        onClose={() => setActiveDialog(null)} 
+      />
+
+      <NewCategoryForm 
+        isOpen={activeDialog === 'category'} 
+        onClose={() => setActiveDialog(null)} 
+      />
+
+      <Dialog open={activeDialog === 'payable'} onOpenChange={(open) => !open && setActiveDialog(null)}>
+        <DialogContent className="bg-background animate-scale-in max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nova Conta a Pagar</DialogTitle>
+          </DialogHeader>
+          <PayableForm onSuccess={() => setActiveDialog(null)} />
+        </DialogContent>
+      </Dialog>
+
+      <InvestmentForm 
+        isOpen={activeDialog === 'investment'} 
+        onClose={() => setActiveDialog(null)} 
+      />
+    </>
   );
 }
