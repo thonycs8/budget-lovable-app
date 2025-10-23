@@ -44,6 +44,66 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_predictions: {
+        Row: {
+          category_id: string | null
+          confidence_score: number | null
+          confirmed_expense_id: string | null
+          created_at: string
+          id: string
+          is_confirmed: boolean | null
+          notes: string | null
+          predicted_amount: number
+          predicted_date: string
+          prediction_source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          confidence_score?: number | null
+          confirmed_expense_id?: string | null
+          created_at?: string
+          id?: string
+          is_confirmed?: boolean | null
+          notes?: string | null
+          predicted_amount: number
+          predicted_date: string
+          prediction_source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          confidence_score?: number | null
+          confirmed_expense_id?: string | null
+          created_at?: string
+          id?: string
+          is_confirmed?: boolean | null
+          notes?: string | null
+          predicted_amount?: number
+          predicted_date?: string
+          prediction_source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_predictions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_predictions_confirmed_expense_id_fkey"
+            columns: ["confirmed_expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -87,6 +147,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financial_reminders: {
+        Row: {
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          is_dismissed: boolean | null
+          is_sent: boolean | null
+          related_id: string | null
+          remind_at: string
+          reminder_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          is_dismissed?: boolean | null
+          is_sent?: boolean | null
+          related_id?: string | null
+          remind_at: string
+          reminder_type: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          is_dismissed?: boolean | null
+          is_sent?: boolean | null
+          related_id?: string | null
+          remind_at?: string
+          reminder_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       income: {
         Row: {
@@ -253,6 +358,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recurring_expenses: {
+        Row: {
+          amount: number
+          auto_create: boolean | null
+          category_id: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_generated_date: string | null
+          reminder_days_before: number | null
+          start_date: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          auto_create?: boolean | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          last_generated_date?: string | null
+          reminder_days_before?: number | null
+          start_date?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          auto_create?: boolean | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_generated_date?: string | null
+          reminder_days_before?: number | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stripe_customers: {
         Row: {
