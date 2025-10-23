@@ -21,10 +21,22 @@ export function Dashboard() {
 
   if (incomeLoading || expensesLoading || payablesLoading || investmentsLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando dashboard...</p>
+      <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-2">
+          <div className="h-8 w-48 bg-muted animate-pulse rounded-lg" />
+          <div className="h-4 w-64 bg-muted animate-pulse rounded-lg" />
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-32 bg-muted animate-pulse rounded-xl" />
+          ))}
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="h-80 bg-muted animate-pulse rounded-xl" />
+          ))}
         </div>
       </div>
     );
@@ -93,12 +105,14 @@ export function Dashboard() {
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-700">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-in slide-in-from-top duration-500">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
             Visão geral das suas finanças pessoais
           </p>
         </div>
@@ -106,18 +120,18 @@ export function Dashboard() {
 
       {/* Alerts */}
       {overduePayables.length > 0 && (
-        <Card className="border-destructive bg-destructive/5">
+        <Card className="border-destructive bg-destructive/5 animate-in slide-in-from-top duration-500 hover:shadow-lg transition-all">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
+              <AlertTriangle className="h-5 w-5 animate-pulse" />
               Contas em Atraso
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-3">
-              Você tem {overduePayables.length} conta(s) em atraso no valor de {formatCurrency(overduePayables.reduce((sum, p) => sum + Number(p.amount), 0))}
+              Você tem <span className="font-semibold text-destructive">{overduePayables.length}</span> conta(s) em atraso no valor de <span className="font-semibold text-destructive">{formatCurrency(overduePayables.reduce((sum, p) => sum + Number(p.amount), 0))}</span>
             </p>
-            <Button variant="destructive" size="sm">
+            <Button variant="destructive" size="sm" className="hover-scale">
               Ver Contas
             </Button>
           </CardContent>
@@ -125,7 +139,7 @@ export function Dashboard() {
       )}
 
       {/* Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 animate-in fade-in duration-700 delay-150">
         <MetricCard
           title="Total de Receitas"
           value={formatCurrency(totalIncome)}
@@ -166,7 +180,7 @@ export function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 animate-in fade-in duration-700 delay-300">
         <CategoryChart
           data={expensesByCategory}
           title="Despesas por Categoria"
@@ -182,12 +196,14 @@ export function Dashboard() {
       </div>
 
       {/* Investment and Payables Summary */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 animate-in fade-in duration-700 delay-450">
         {/* Investment Summary */}
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-investment">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 rounded-lg bg-investment/10">
+                <Target className="h-5 w-5 text-investment" />
+              </div>
               Resumo de Investimentos
             </CardTitle>
           </CardHeader>
@@ -195,35 +211,39 @@ export function Dashboard() {
             {investments.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Investido</p>
-                    <p className="text-xl font-bold text-blue-600">{formatCurrency(totalInvested)}</p>
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-investment/5 to-transparent">
+                    <p className="text-sm text-muted-foreground mb-1">Total Investido</p>
+                    <p className="text-xl font-bold text-investment">{formatCurrency(totalInvested)}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Valor Atual</p>
-                    <p className="text-xl font-bold text-blue-600">{formatCurrency(totalCurrentValue)}</p>
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-investment/5 to-transparent">
+                    <p className="text-sm text-muted-foreground mb-1">Valor Atual</p>
+                    <p className="text-xl font-bold text-investment">{formatCurrency(totalCurrentValue)}</p>
                   </div>
                 </div>
                 <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <span className="text-sm text-muted-foreground">Ganho/Perda</span>
-                    <span className={`font-semibold ${investmentGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-semibold ${investmentGain >= 0 ? 'text-income' : 'text-expense'}`}>
                       {investmentGain >= 0 ? '+' : ''}{formatCurrency(investmentGain)}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center mt-2">
+                  <div className="flex justify-between items-center mt-1 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <span className="text-sm text-muted-foreground">Rentabilidade</span>
-                    <span className={`font-semibold ${investmentGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-semibold ${investmentGain >= 0 ? 'text-income' : 'text-expense'}`}>
                       {totalInvested > 0 ? ((investmentGain / totalInvested) * 100).toFixed(2) : '0.00'}%
                     </span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Top Investimentos:</p>
-                  {investments.slice(0, 3).map((investment) => (
-                    <div key={investment.id} className="flex justify-between text-sm">
-                      <span className="truncate">{investment.title}</span>
-                      <span className="font-medium">{formatCurrency(Number(investment.current_value || investment.amount))}</span>
+                  <p className="text-sm font-medium mb-3">Top Investimentos:</p>
+                  {investments.slice(0, 3).map((investment, idx) => (
+                    <div 
+                      key={investment.id} 
+                      className="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:translate-x-1"
+                      style={{ animationDelay: `${idx * 50}ms` }}
+                    >
+                      <span className="truncate flex-1">{investment.title}</span>
+                      <span className="font-medium text-investment ml-2">{formatCurrency(Number(investment.current_value || investment.amount))}</span>
                     </div>
                   ))}
                 </div>
@@ -241,10 +261,12 @@ export function Dashboard() {
         </Card>
 
         {/* Payables Summary */}
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-warning">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 rounded-lg bg-warning/10">
+                <AlertTriangle className="h-5 w-5 text-warning" />
+              </div>
               Resumo de Contas a Pagar
             </CardTitle>
           </CardHeader>
@@ -252,44 +274,48 @@ export function Dashboard() {
             {payables.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Pendente</p>
-                    <p className="text-xl font-bold text-orange-600">{formatCurrency(pendingPayables)}</p>
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-warning/5 to-transparent">
+                    <p className="text-sm text-muted-foreground mb-1">Total Pendente</p>
+                    <p className="text-xl font-bold text-warning">{formatCurrency(pendingPayables)}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Contas Pendentes</p>
-                    <p className="text-xl font-bold text-orange-600">{payables.filter(p => !p.is_paid).length}</p>
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-warning/5 to-transparent">
+                    <p className="text-sm text-muted-foreground mb-1">Contas Pendentes</p>
+                    <p className="text-xl font-bold text-warning">{payables.filter(p => !p.is_paid).length}</p>
                   </div>
                 </div>
                 {overduePayables.length > 0 && (
                   <div className="border-t pt-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center p-2 rounded-lg hover:bg-destructive/5 transition-colors">
                       <span className="text-sm text-muted-foreground">Em Atraso</span>
-                      <span className="font-semibold text-red-600">
+                      <span className="font-semibold text-destructive">
                         {overduePayables.length} conta(s)
                       </span>
                     </div>
-                    <div className="flex justify-between items-center mt-2">
+                    <div className="flex justify-between items-center mt-1 p-2 rounded-lg hover:bg-destructive/5 transition-colors">
                       <span className="text-sm text-muted-foreground">Valor em Atraso</span>
-                      <span className="font-semibold text-red-600">
+                      <span className="font-semibold text-destructive">
                         {formatCurrency(overduePayables.reduce((sum, p) => sum + Number(p.amount), 0))}
                       </span>
                     </div>
                   </div>
                 )}
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Próximos Vencimentos:</p>
+                  <p className="text-sm font-medium mb-3">Próximos Vencimentos:</p>
                   {payables
                     .filter(p => !p.is_paid)
                     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
                     .slice(0, 3)
-                    .map((payable) => (
-                      <div key={payable.id} className="flex justify-between text-sm">
-                        <div>
-                          <span className="truncate block">{payable.title}</span>
-                          <span className="text-muted-foreground">{new Date(payable.due_date).toLocaleDateString('pt-BR')}</span>
+                    .map((payable, idx) => (
+                      <div 
+                        key={payable.id} 
+                        className="flex justify-between items-start text-sm p-2 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:translate-x-1"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        <div className="flex-1">
+                          <span className="truncate block font-medium">{payable.title}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(payable.due_date).toLocaleDateString('pt-BR')}</span>
                         </div>
-                        <span className="font-medium">{formatCurrency(Number(payable.amount))}</span>
+                        <span className="font-medium text-warning ml-2">{formatCurrency(Number(payable.amount))}</span>
                       </div>
                     ))}
                 </div>
@@ -308,38 +334,51 @@ export function Dashboard() {
       </div>
 
       {/* Recent Transactions */}
-      <Card>
+      <Card className="animate-in fade-in duration-700 delay-500 hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle>Transações Recentes</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+            Transações Recentes
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {recentTransactions.length > 0 ? (
-            <div className="space-y-3">
-              {recentTransactions.map((transaction) => {
+            <div className="space-y-2">
+              {recentTransactions.map((transaction, idx) => {
                 const category = categories.find(cat => cat.id === transaction.category_id);
                 return (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-card/50"
+                    className="group flex items-center justify-between p-4 rounded-xl border bg-gradient-to-r from-card to-card/50 hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-primary/20"
+                    style={{ animationDelay: `${idx * 100}ms` }}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-2 h-2 rounded-full ${
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className={`w-3 h-3 rounded-full ${
                         transaction.type === 'income' ? 'bg-income' : 'bg-expense'
-                      }`} />
-                      <div>
-                        <p className="font-medium">{transaction.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {category?.name || 'Sem categoria'} • {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                      } shadow-lg animate-pulse`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate group-hover:text-primary transition-colors">{transaction.title}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <span className="truncate">{category?.name || 'Sem categoria'}</span>
+                          <span>•</span>
+                          <span>{new Date(transaction.date).toLocaleDateString('pt-BR')}</span>
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`font-semibold ${
+                    <div className="text-right ml-4">
+                      <p className={`font-bold text-lg ${
                         transaction.type === 'income' ? 'text-income' : 'text-expense'
                       }`}>
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount))}
                       </p>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs mt-1 ${
+                          transaction.type === 'income' 
+                            ? 'border-income/30 text-income' 
+                            : 'border-expense/30 text-expense'
+                        }`}
+                      >
                         {transaction.type === 'income' ? 'Receita' : 'Despesa'}
                       </Badge>
                     </div>

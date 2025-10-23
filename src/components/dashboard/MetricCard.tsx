@@ -36,27 +36,35 @@ export function MetricCard({
   };
 
   return (
-    <Card className={cn("hover:shadow-lg transition-shadow", getVariantStyles(), className)}>
+    <Card className={cn(
+      "group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] overflow-hidden animate-in fade-in-50 slide-in-from-bottom-4",
+      getVariantStyles(), 
+      className
+    )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
           {title}
         </CardTitle>
-        <div className="text-muted-foreground">
+        <div className="text-muted-foreground group-hover:scale-110 transition-transform duration-300">
           {icon}
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">
+          {value}
+        </div>
         {trend && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <div className="flex items-center gap-1 mt-2">
             <span className={cn(
-              "font-medium",
-              trend.isPositive ? "text-income" : "text-expense"
+              "text-sm font-semibold px-2 py-0.5 rounded-full",
+              trend.isPositive 
+                ? "bg-income/10 text-income" 
+                : "bg-expense/10 text-expense"
             )}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
+              {trend.isPositive ? '↗' : '↘'} {Math.abs(trend.value).toFixed(1)}%
             </span>
-            {' '}em relação ao mês anterior
-          </p>
+            <span className="text-xs text-muted-foreground">vs. mês anterior</span>
+          </div>
         )}
       </CardContent>
     </Card>

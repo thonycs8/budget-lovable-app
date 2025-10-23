@@ -18,11 +18,22 @@ export function CategoryChart({ data, title, total, formatCurrency }: CategoryCh
       const data = payload[0];
       const percentage = ((data.value / total) * 100).toFixed(1);
       return (
-        <div className="bg-background border rounded-lg shadow-lg p-3">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-sm text-muted-foreground">
-            {formatCurrency(data.value)} ({percentage}%)
-          </p>
+        <div className="bg-card border-2 rounded-xl shadow-xl p-4 backdrop-blur-sm animate-in fade-in-50 zoom-in-95">
+          <div className="flex items-center gap-2 mb-2">
+            <div 
+              className="w-3 h-3 rounded-full shadow-sm" 
+              style={{ backgroundColor: data.payload.color }}
+            />
+            <p className="font-semibold text-foreground">{data.name}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-base font-bold text-primary">
+              {formatCurrency(data.value)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {percentage}% do total
+            </p>
+          </div>
         </div>
       );
     }
@@ -31,13 +42,14 @@ export function CategoryChart({ data, title, total, formatCurrency }: CategoryCh
 
   if (data.length === 0) {
     return (
-      <Card>
+      <Card className="hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className="text-lg">{title}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-48 text-muted-foreground">
-            Nenhum dado disponível
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+            <div className="w-16 h-16 rounded-full bg-muted animate-pulse mb-4" />
+            <p className="text-sm">Nenhum dado disponível</p>
           </div>
         </CardContent>
       </Card>
@@ -45,31 +57,45 @@ export function CategoryChart({ data, title, total, formatCurrency }: CategoryCh
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Total: {formatCurrency(total)}
-        </p>
+    <Card className="hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
+        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+        <div className="flex items-center gap-2">
+          <div className="h-1 w-12 bg-primary/20 rounded-full" />
+          <p className="text-sm text-muted-foreground">
+            Total: <span className="font-semibold text-foreground">{formatCurrency(total)}</span>
+          </p>
+        </div>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+      <CardContent className="pt-6">
+        <ResponsiveContainer width="100%" height={320}>
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={2}
+              innerRadius={70}
+              outerRadius={110}
+              paddingAngle={3}
               dataKey="value"
+              animationBegin={0}
+              animationDuration={800}
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color}
+                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  stroke="hsl(var(--background))"
+                  strokeWidth={2}
+                />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
-            <Legend />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+              iconType="circle"
+            />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
