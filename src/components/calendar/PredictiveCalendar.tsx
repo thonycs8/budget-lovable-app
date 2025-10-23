@@ -100,6 +100,14 @@ export function PredictiveCalendar() {
     return { hasExpense, hasIncome, hasPrediction, hasOverdue };
   }, [eventsByDate]);
 
+  // Memoize modifiers to prevent creating new function references on every render
+  const calendarModifiers = useMemo(() => ({
+    hasExpense: (date: Date) => dayModifiers.hasExpense.has(date.toISOString().split('T')[0]),
+    hasIncome: (date: Date) => dayModifiers.hasIncome.has(date.toISOString().split('T')[0]),
+    hasPrediction: (date: Date) => dayModifiers.hasPrediction.has(date.toISOString().split('T')[0]),
+    hasOverdue: (date: Date) => dayModifiers.hasOverdue.has(date.toISOString().split('T')[0]),
+  }), [dayModifiers]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Active Reminders */}
@@ -160,12 +168,7 @@ export function PredictiveCalendar() {
               selected={selectedDate}
               onSelect={setSelectedDate}
               className="rounded-lg border"
-              modifiers={{
-                hasExpense: (date) => dayModifiers.hasExpense.has(date.toISOString().split('T')[0]),
-                hasIncome: (date) => dayModifiers.hasIncome.has(date.toISOString().split('T')[0]),
-                hasPrediction: (date) => dayModifiers.hasPrediction.has(date.toISOString().split('T')[0]),
-                hasOverdue: (date) => dayModifiers.hasOverdue.has(date.toISOString().split('T')[0]),
-              }}
+              modifiers={calendarModifiers}
               modifiersClassNames={{
                 hasOverdue: 'bg-destructive/20 font-bold',
                 hasPrediction: 'bg-warning/10 border border-warning/30',
