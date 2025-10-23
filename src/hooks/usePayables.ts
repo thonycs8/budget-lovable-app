@@ -48,7 +48,9 @@ export const usePayables = () => {
       if (error) throw error;
       setPayables(data || []);
     } catch (error) {
-      console.error('Erro ao carregar contas a pagar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao carregar contas a pagar:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar as contas a pagar.",
@@ -88,7 +90,9 @@ export const usePayables = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao criar conta a pagar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao criar conta a pagar:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível criar a conta a pagar.",
@@ -122,7 +126,9 @@ export const usePayables = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao atualizar conta a pagar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar conta a pagar:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar a conta a pagar.",
@@ -146,7 +152,9 @@ export const usePayables = () => {
         description: "Conta a pagar excluída com sucesso!",
       });
     } catch (error) {
-      console.error('Erro ao excluir conta a pagar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao excluir conta a pagar:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível excluir a conta a pagar.",

@@ -1,18 +1,29 @@
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency, CURRENCIES, type Currency } from '@/hooks/useCurrency';
 import { useTheme, type ThemeTemplate } from '@/hooks/useTheme';
-import { User, Mail, Save, Globe, Palette } from 'lucide-react';
+import { User, Mail, Save, Globe, Palette, Phone } from 'lucide-react';
+
+const profileSchema = z.object({
+  full_name: z.string().trim().min(2, 'Nome deve ter no mínimo 2 caracteres').max(100, 'Nome muito longo'),
+  email: z.string().trim().email('Email inválido').max(255, 'Email muito longo'),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Telefone inválido').optional().or(z.literal('')),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface Profile {
   id: string;
@@ -31,10 +42,14 @@ export default function Profile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    phone: '',
+
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      full_name: '',
+      email: '',
+      phone: '',
+    },
   });
 
   const handleCurrencyChange = (newCurrency: Currency) => {
@@ -71,14 +86,16 @@ export default function Profile() {
 
       if (data) {
         setProfile(data);
-        setFormData({
+        form.reset({
           full_name: data.full_name || '',
           email: data.email || user?.email || '',
           phone: data.phone || '',
         });
       }
     } catch (error) {
-      console.error('Erro ao carregar perfil:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao carregar perfil:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar o perfil.",
@@ -89,16 +106,15 @@ export default function Profile() {
     }
   };
 
-  const updateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const updateProfile = async (data: ProfileFormData) => {
     setSaving(true);
 
     try {
       const profileData: any = {
         user_id: user?.id,
-        full_name: formData.full_name,
-        email: formData.email,
-        phone: formData.phone,
+        full_name: data.full_name,
+        email: data.email,
+        phone: data.phone || null,
       };
 
       // Include id if profile already exists
@@ -121,7 +137,9 @@ export default function Profile() {
 
       fetchProfile();
     } catch (error) {
-      console.error('Erro ao atualizar perfil:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar perfil:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o perfil.",
@@ -144,7 +162,7 @@ export default function Profile() {
           <div className="flex justify-center mb-4">
             <Avatar className="h-20 w-20">
               <AvatarFallback className="text-lg">
-                {formData.full_name ? formData.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase()}
+                {form.watch('full_name') ? form.watch('full_name').charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </div>
@@ -155,50 +173,71 @@ export default function Profile() {
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={updateProfile} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="full_name" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Nome Completo
-              </Label>
-              <Input
-                id="full_name"
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                placeholder="Seu nome completo"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(updateProfile)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="full_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Nome Completo
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Seu nome completo" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="seu@email.com"
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="seu@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <PhoneInput
-                value={formData.phone}
-                onChange={(value) => setFormData({ ...formData, phone: value })}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Telefone
+                    </FormLabel>
+                    <FormControl>
+                      <PhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <p className="text-xs text-muted-foreground">
+                      Selecione o país e digite o número de telefone
+                    </p>
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                Selecione o país e digite o número de telefone
-              </p>
-            </div>
 
-            <Button type="submit" className="w-full" disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          </form>
+              <Button type="submit" className="w-full" disabled={saving}>
+                <Save className="h-4 w-4 mr-2" />
+                {saving ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </form>
+          </Form>
 
           <Separator className="my-6" />
 
@@ -209,7 +248,7 @@ export default function Profile() {
                 Aparência
               </h3>
               <div className="space-y-2">
-                <Label htmlFor="theme">Tema de Cores</Label>
+                <FormLabel htmlFor="theme">Tema de Cores</FormLabel>
                 <Select value={theme} onValueChange={handleThemeChange}>
                   <SelectTrigger id="theme">
                     <SelectValue>
@@ -236,7 +275,7 @@ export default function Profile() {
                 Preferências Regionais
               </h3>
               <div className="space-y-2">
-                <Label htmlFor="currency">Moeda</Label>
+                <FormLabel htmlFor="currency">Moeda</FormLabel>
                 <Select value={currency} onValueChange={handleCurrencyChange}>
                   <SelectTrigger id="currency">
                     <SelectValue>

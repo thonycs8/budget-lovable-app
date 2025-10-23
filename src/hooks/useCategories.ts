@@ -32,7 +32,9 @@ export const useCategories = () => {
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
-      console.error('Erro ao carregar categorias:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao carregar categorias:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar as categorias.",
@@ -65,7 +67,9 @@ export const useCategories = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao criar categoria:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao criar categoria:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível criar a categoria.",
@@ -92,7 +96,9 @@ export const useCategories = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao atualizar categoria:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar categoria:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar a categoria.",
@@ -116,7 +122,9 @@ export const useCategories = () => {
         description: "Categoria excluída com sucesso!",
       });
     } catch (error) {
-      console.error('Erro ao excluir categoria:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao excluir categoria:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível excluir a categoria.",

@@ -46,7 +46,9 @@ export const useExpenses = () => {
       if (error) throw error;
       setExpenses(data || []);
     } catch (error) {
-      console.error('Erro ao carregar despesas:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao carregar despesas:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar as despesas.",
@@ -86,7 +88,9 @@ export const useExpenses = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao criar despesa:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao criar despesa:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível criar a despesa.",
@@ -120,7 +124,9 @@ export const useExpenses = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao atualizar despesa:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar despesa:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar a despesa.",
@@ -144,7 +150,9 @@ export const useExpenses = () => {
         description: "Despesa excluída com sucesso!",
       });
     } catch (error) {
-      console.error('Erro ao excluir despesa:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao excluir despesa:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível excluir a despesa.",

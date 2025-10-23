@@ -35,7 +35,9 @@ export const useInvestments = () => {
       if (error) throw error;
       setInvestments(data || []);
     } catch (error) {
-      console.error('Erro ao carregar investimentos:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao carregar investimentos:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar os investimentos.",
@@ -68,7 +70,9 @@ export const useInvestments = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao criar investimento:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao criar investimento:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível criar o investimento.",
@@ -95,7 +99,9 @@ export const useInvestments = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao atualizar investimento:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar investimento:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o investimento.",
@@ -119,7 +125,9 @@ export const useInvestments = () => {
         description: "Investimento excluído com sucesso!",
       });
     } catch (error) {
-      console.error('Erro ao excluir investimento:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao excluir investimento:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível excluir o investimento.",

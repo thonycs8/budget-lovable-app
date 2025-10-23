@@ -53,7 +53,9 @@ export function useSettings() {
         setSettings(newSettings);
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching settings:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar as configurações.",
@@ -85,7 +87,9 @@ export function useSettings() {
       
       return { data, error: null };
     } catch (error) {
-      console.error('Error updating settings:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating settings:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar as configurações.",

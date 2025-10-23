@@ -46,7 +46,9 @@ export const useIncome = () => {
       if (error) throw error;
       setIncome(data || []);
     } catch (error) {
-      console.error('Erro ao carregar receitas:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao carregar receitas:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível carregar as receitas.",
@@ -86,7 +88,9 @@ export const useIncome = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao criar receita:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao criar receita:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível criar a receita.",
@@ -120,7 +124,9 @@ export const useIncome = () => {
       });
       return data;
     } catch (error) {
-      console.error('Erro ao atualizar receita:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar receita:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível atualizar a receita.",
@@ -144,7 +150,9 @@ export const useIncome = () => {
         description: "Receita excluída com sucesso!",
       });
     } catch (error) {
-      console.error('Erro ao excluir receita:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao excluir receita:', error);
+      }
       toast({
         title: "Erro",
         description: "Não foi possível excluir a receita.",
