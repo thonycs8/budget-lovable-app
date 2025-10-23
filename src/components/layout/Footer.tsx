@@ -63,18 +63,26 @@ export function Footer() {
               </li>
               <li>
                 <button
-                  onClick={() => navigate('/profile')}
+                  onClick={() => navigate('/help')}
                   className="text-muted-foreground hover:text-primary transition-colors hover:underline"
                 >
-                  Meu Perfil
+                  Ajuda
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate('/settings')}
+                  onClick={() => navigate('/about')}
                   className="text-muted-foreground hover:text-primary transition-colors hover:underline"
                 >
-                  Configurações
+                  Sobre
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="text-muted-foreground hover:text-primary transition-colors hover:underline"
+                >
+                  Meu Perfil
                 </button>
               </li>
             </ul>

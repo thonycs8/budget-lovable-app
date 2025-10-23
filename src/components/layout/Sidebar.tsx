@@ -11,7 +11,9 @@ import {
   Bell,
   Settings,
   User,
-  LogOut
+  LogOut,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +33,12 @@ const menuItems = [
   { id: '/settings', label: 'Configurações', icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
+}
+
+export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const { payables } = usePayables();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -49,50 +56,68 @@ export function Sidebar() {
   };
 
   return (
-    <div className="hidden md:flex fixed left-0 top-[4rem] bottom-[3.5rem] z-30 w-64 flex-col bg-card border-r transition-all duration-300">
-      <div className="flex flex-col h-full p-6">
-          {/* Header */}
-          <div className="pb-6 border-b">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
-              GestFin
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Gestão Financeira
-            </p>
-          </div>
+    <div className={cn(
+      "hidden md:flex fixed left-0 top-[4rem] bottom-[3.5rem] z-30 flex-col bg-card border-r transition-all duration-300",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
+      <div className="flex flex-col h-full">
+        {/* Toggle Button */}
+        <div className="flex justify-end p-2 border-b">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hover-scale"
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.id;
-              const showBadge = item.id === '/alerts' && overduePayables.length > 0;
+        {/* Navigation */}
+        <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.id;
+            const showBadge = item.id === '/alerts' && overduePayables.length > 0;
 
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start transition-all duration-200 hover-scale",
-                    isActive && "bg-primary text-primary-foreground"
-                  )}
-                  onClick={() => handleNavigation(item.id)}
-                >
-                  <Icon className="mr-3 h-4 w-4" />
-                  {item.label}
-                  {showBadge && (
-                    <Badge variant="destructive" className="ml-auto">
-                      {overduePayables.length}
-                    </Badge>
-                  )}
-                </Button>
-              );
-            })}
-          </nav>
+            return (
+              <Button
+                key={item.id}
+                variant={isActive ? "default" : "ghost"}
+                className={cn(
+                  "w-full transition-all duration-200 hover-scale",
+                  isActive && "bg-primary text-primary-foreground",
+                  isCollapsed ? "justify-center px-2" : "justify-start"
+                )}
+                onClick={() => handleNavigation(item.id)}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <Icon className={cn("h-4 w-4", !isCollapsed && "mr-3")} />
+                {!isCollapsed && (
+                  <>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {showBadge && (
+                      <Badge variant="destructive" className="ml-auto">
+                        {overduePayables.length}
+                      </Badge>
+                    )}
+                  </>
+                )}
+                {isCollapsed && showBadge && (
+                  <span className="absolute top-1 right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+                  </span>
+                )}
+              </Button>
+            );
+          })}
+        </nav>
 
-          {/* User Profile */}
-          <div className="pt-4 mt-auto border-t space-y-2">
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+        {/* User Profile */}
+        <div className="p-2 mt-auto border-t space-y-2">
+          {!isCollapsed && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 mb-2">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="text-xs">
                   {user?.email?.charAt(0).toUpperCase()}
@@ -104,7 +129,30 @@ export function Sidebar() {
                 </p>
               </div>
             </div>
-            
+          )}
+          
+          {isCollapsed ? (
+            <div className="space-y-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-full"
+                onClick={() => navigate('/profile')}
+                title="Perfil"
+              >
+                <User className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-full"
+                onClick={signOut}
+                title="Sair"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -123,12 +171,9 @@ export function Sidebar() {
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
-            
-            <div className="text-xs text-muted-foreground text-center pt-2">
-              © 2025 GestFin
-            </div>
-          </div>
+          )}
         </div>
       </div>
+    </div>
   );
 }
