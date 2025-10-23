@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,10 +12,6 @@ export function BalancePrediction() {
   const { predictions, historicalData, modelStats, loading, generatePredictions } = useBalancePrediction();
   const { formatCurrency } = useCurrency();
   const [daysAhead, setDaysAhead] = useState(30);
-
-  useEffect(() => {
-    generatePredictions(daysAhead);
-  }, [daysAhead, generatePredictions]);
 
   const handleGenerate = () => {
     generatePredictions(daysAhead);
