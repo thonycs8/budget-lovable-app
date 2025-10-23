@@ -325,6 +325,32 @@ export function Header() {
                     Calendário
                   </NavigationMenuLink>
                 </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    onClick={() => navigate('/alerts')}
+                    className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer hover-scale",
+                      location.pathname === '/alerts' && "bg-accent"
+                    )}
+                  >
+                    <Bell className="mr-2 h-4 w-4" />
+                    Alertas
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    onClick={() => navigate('/settings')}
+                    className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer hover-scale",
+                      location.pathname === '/settings' && "bg-accent"
+                    )}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Configurações
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
           </div>
