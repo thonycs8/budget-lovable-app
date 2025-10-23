@@ -42,18 +42,7 @@ export default function Calendar() {
     }).format(amount);
   };
 
-  if (incomeLoading || expensesLoading || payablesLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando calendário...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Generate calendar events
+  // Generate calendar events - must be before early return to avoid hook order issues
   const calendarEvents = useMemo((): CalendarEvent[] => {
     const events: CalendarEvent[] = [];
 
@@ -139,6 +128,18 @@ export default function Calendar() {
 
     return { income, expenses, pendingPayables };
   }, [calendarEvents, currentDate]);
+
+  // Check loading state after all hooks are called
+  if (incomeLoading || expensesLoading || payablesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando calendário...</p>
+        </div>
+      </div>
+    );
+  }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     if (direction === 'prev') {
