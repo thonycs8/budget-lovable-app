@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Plus, TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, ArrowUpRight, ArrowDownRight, Trash2 } from 'lucide-react';
 import { useInvestments } from '@/hooks/useInvestments';
+import { useCurrency } from '@/hooks/useCurrency';
 import InvestmentForm from '@/components/forms/InvestmentForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,14 +14,8 @@ import { format, parseISO } from 'date-fns';
 
 export default function Investments() {
   const { investments, loading, deleteInvestment } = useInvestments();
+  const { formatCurrency } = useCurrency();
   const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
-  };
 
   const getInvestmentTypeLabel = (type: string) => {
     const types: Record<string, string> = {

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plus, Search, Filter, Calendar, CheckCircle, XCircle, Clock, AlertTriangle, Trash2 } from 'lucide-react';
 import { usePayables } from '@/hooks/usePayables';
 import { useCategories } from '@/hooks/useCategories';
+import { useCurrency } from '@/hooks/useCurrency';
 import { PayableForm } from '@/components/forms/PayableForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ import { ptBR } from 'date-fns/locale';
 export default function Payables() {
   const { payables, loading, updatePayable, deletePayable } = usePayables();
   const { categories } = useCategories();
+  const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -56,13 +58,6 @@ export default function Payables() {
     }).length,
     totalAmount: payables.reduce((sum, p) => sum + Number(p.amount), 0),
     pendingAmount: payables.filter(p => !p.is_paid).reduce((sum, p) => sum + Number(p.amount), 0),
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
   };
 
   const handleFormSuccess = () => {

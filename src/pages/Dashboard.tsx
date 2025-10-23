@@ -9,6 +9,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { usePayables } from '@/hooks/usePayables';
 import { useInvestments } from '@/hooks/useInvestments';
 import { useCategories } from '@/hooks/useCategories';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function Dashboard() {
   const { income, loading: incomeLoading } = useIncome();
@@ -16,13 +17,7 @@ export function Dashboard() {
   const { payables, loading: payablesLoading } = usePayables();
   const { investments, loading: investmentsLoading } = useInvestments();
   const { categories } = useCategories();
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
-  };
+  const { formatCurrency } = useCurrency();
 
   if (incomeLoading || expensesLoading || payablesLoading || investmentsLoading) {
     return (

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plus, Search, Filter, TrendingDown, Trash2 } from 'lucide-react';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useCategories } from '@/hooks/useCategories';
+import { useCurrency } from '@/hooks/useCurrency';
 import ExpenseForm from '@/components/forms/ExpenseForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { format, parseISO } from 'date-fns';
 export default function Expenses() {
   const { expenses, loading, deleteExpense } = useExpenses();
   const { categories } = useCategories();
+  const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -30,13 +32,6 @@ export default function Expenses() {
 
   // Calculate total expenses
   const totalExpenses = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
-  };
 
   const handleFormSuccess = () => {
     setIsFormOpen(false);

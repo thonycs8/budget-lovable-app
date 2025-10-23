@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plus, Search, Filter, DollarSign, Trash2 } from 'lucide-react';
 import { useIncome } from '@/hooks/useIncome';
 import { useCategories } from '@/hooks/useCategories';
+import { useCurrency } from '@/hooks/useCurrency';
 import IncomeForm from '@/components/forms/IncomeForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { format, parseISO } from 'date-fns';
 export default function Income() {
   const { income, loading, deleteIncome } = useIncome();
   const { categories } = useCategories();
+  const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -30,13 +32,6 @@ export default function Income() {
 
   // Calculate total income
   const totalIncome = income.reduce((sum, item) => sum + Number(item.amount), 0);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
-  };
 
   const handleFormSuccess = () => {
     setIsFormOpen(false);

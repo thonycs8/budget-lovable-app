@@ -6,6 +6,7 @@ import { useIncome } from '@/hooks/useIncome';
 import { useExpenses } from '@/hooks/useExpenses';
 import { usePayables } from '@/hooks/usePayables';
 import { useCategories } from '@/hooks/useCategories';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,18 +30,12 @@ export default function Calendar() {
   const { expenses, loading: expensesLoading } = useExpenses();
   const { payables, loading: payablesLoading } = usePayables();
   const { categories } = useCategories();
+  const { formatCurrency } = useCurrency();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isPayableFormOpen, setIsPayableFormOpen] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
-  };
 
   // Generate calendar events - must be before early return to avoid hook order issues
   const calendarEvents = useMemo((): CalendarEvent[] => {
