@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { queryClient } from "@/lib/queryClient";
+import { useOfflineSync } from "@/lib/offlineSync";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -27,18 +29,17 @@ import About from "./pages/About";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
-
-const App = () => {
+const AppContent = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Hook de sincronização offline
+  useOfflineSync();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/*" element={
@@ -76,6 +77,14 @@ const App = () => {
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+  );
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
       </AuthProvider>
     </QueryClientProvider>
   );
