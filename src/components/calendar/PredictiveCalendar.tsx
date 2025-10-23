@@ -19,10 +19,17 @@ export function PredictiveCalendar() {
   const { income } = useIncome();
   const { payables } = usePayables();
   const { predictions, generatePredictions, loading: predictionsLoading } = usePredictions();
-  const { reminders, getActiveReminders } = useReminders();
+  const { reminders } = useReminders();
   const { formatCurrency } = useCurrency();
 
-  const activeReminders = getActiveReminders();
+  // Memoize active reminders to prevent re-computation on every render
+  const activeReminders = useMemo(() => {
+    const now = new Date();
+    return reminders.filter(rem => {
+      const remindAt = new Date(rem.remind_at);
+      return remindAt <= now && !rem.is_dismissed;
+    });
+  }, [reminders]);
 
   // Group all events by date
   const eventsByDate = useMemo(() => {
