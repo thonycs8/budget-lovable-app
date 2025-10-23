@@ -31,11 +31,6 @@ export default function Income() {
   // Calculate total income
   const totalIncome = income.reduce((sum, item) => sum + Number(item.amount), 0);
 
-  // Get income categories
-  const incomeCategories = categories.filter(category => category.name.toLowerCase().includes('receita') || 
-                                           category.name.toLowerCase().includes('renda') ||
-                                           category.name.toLowerCase().includes('salário'));
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -120,7 +115,7 @@ export default function Income() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
-                  {incomeCategories.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>

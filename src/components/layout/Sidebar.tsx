@@ -13,16 +13,14 @@ import {
   Settings,
   Menu,
   X,
-  Building2,
-  Users,
   User,
   LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePayables } from '@/hooks/usePayables';
 
 interface SidebarProps {
   activeTab: string;
@@ -43,24 +41,20 @@ const menuItems = [
 
 export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { payables, selectedGroup, setSelectedGroup } = useApp();
+  const { payables } = usePayables();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   // Calculate overdue payables for alerts
   const overduePayables = payables.filter(p => {
-    const dueDate = new Date(p.dueDate);
+    const dueDate = new Date(p.due_date);
     const today = new Date();
-    return !p.isPaid && dueDate < today && p.group === selectedGroup;
+    return !p.is_paid && dueDate < today;
   });
 
   const handleNavigation = (tabId: string) => {
     setActiveTab(tabId);
     setIsOpen(false);
-  };
-
-  const toggleGroup = () => {
-    setSelectedGroup(selectedGroup === 'empresa' ? 'familia' : 'empresa');
   };
 
   return (
@@ -99,28 +93,6 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             <p className="text-sm text-muted-foreground mt-1">
               Gestão Financeira
             </p>
-            
-            {/* Group selector */}
-            <div className="mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleGroup}
-                className="w-full justify-start"
-              >
-                {selectedGroup === 'empresa' ? (
-                  <>
-                    <Building2 className="mr-2 h-4 w-4" />
-                    Empresa
-                  </>
-                ) : (
-                  <>
-                    <Users className="mr-2 h-4 w-4" />
-                    Família
-                  </>
-                )}
-              </Button>
-            </div>
           </div>
 
           {/* Navigation */}

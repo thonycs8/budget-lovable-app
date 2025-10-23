@@ -101,13 +101,6 @@ export default function Payables() {
     return { text: 'Pendente', variant: 'outline' as const, icon: Clock };
   };
 
-  // Get expense categories
-  const expenseCategories = categories.filter(category => 
-    category.name.toLowerCase().includes('despesa') || 
-    category.name.toLowerCase().includes('conta') ||
-    category.name.toLowerCase().includes('pagamento')
-  );
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -228,7 +221,7 @@ export default function Payables() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
-                  {expenseCategories.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>

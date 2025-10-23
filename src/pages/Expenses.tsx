@@ -31,13 +31,6 @@ export default function Expenses() {
   // Calculate total expenses
   const totalExpenses = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
-  // Get expense categories
-  const expenseCategories = categories.filter(category => 
-    category.name.toLowerCase().includes('despesa') || 
-    category.name.toLowerCase().includes('gasto') ||
-    category.name.toLowerCase().includes('conta')
-  );
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -122,7 +115,7 @@ export default function Expenses() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
-                  {expenseCategories.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
