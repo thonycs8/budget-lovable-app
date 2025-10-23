@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,22 @@ import { useToast } from '@/hooks/use-toast';
 import { useExpenses, Expense } from '@/hooks/useExpenses';
 import { useCategories } from '@/hooks/useCategories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const expenseSchema = z.object({
+  title: z.string().trim().min(1, 'Título é obrigatório').max(200, 'Título deve ter no máximo 200 caracteres'),
+  amount: z.string().min(1, 'Valor é obrigatório').refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0 && num <= 999999999.99;
+  }, 'Valor deve ser positivo e menor que 1 bilhão'),
+  category_id: z.string().optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
+  description: z.string().max(1000, 'Descrição deve ter no máximo 1000 caracteres').optional(),
+});
+
+type ExpenseFormData = z.infer<typeof expenseSchema>;
 
 interface ExpenseFormProps {
   isOpen: boolean;
@@ -21,41 +37,56 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
-  console.log('ExpenseForm - Categories:', categories, 'Loading:', categoriesLoading);
-  
-  const [formData, setFormData] = useState({
-    title: expense?.title || '',
-    amount: expense?.amount?.toString() || '',
-    description: expense?.description || '',
-    date: expense?.date || new Date().toISOString().split('T')[0],
-    category_id: expense?.category_id || '',
+  const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm<ExpenseFormData>({
+    resolver: zodResolver(expenseSchema),
+    defaultValues: {
+      title: '',
+      amount: '',
+      category_id: '',
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+    }
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (expense) {
+      reset({
+        title: expense.title,
+        amount: expense.amount.toString(),
+        category_id: expense.category_id || '',
+        date: expense.date,
+        description: expense.description || '',
+      });
+    } else if (isOpen) {
+      reset({
+        title: '',
+        amount: '',
+        category_id: '',
+        date: new Date().toISOString().split('T')[0],
+        description: '',
+      });
+    }
+  }, [expense, reset, isOpen]);
+
+  const onSubmit = async (data: ExpenseFormData) => {
     setLoading(true);
 
     try {
-      const data = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        category_id: formData.category_id === "none" ? null : formData.category_id,
+      const expenseData = {
+        title: data.title.trim(),
+        amount: parseFloat(data.amount),
+        category_id: data.category_id === "none" || !data.category_id ? null : data.category_id,
+        date: data.date,
+        description: data.description?.trim() || '',
       };
 
       if (expense) {
-        await updateExpense(expense.id, data);
+        await updateExpense(expense.id, expenseData);
       } else {
-        await createExpense(data);
+        await createExpense(expenseData);
       }
 
       onClose();
-      setFormData({
-        title: '',
-        amount: '',
-        description: '',
-        date: new Date().toISOString().split('T')[0],
-        category_id: '',
-      });
     } catch (error) {
       toast({
         title: "Erro",
@@ -67,6 +98,8 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
     }
   };
 
+  const categoryId = watch('category_id');
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -76,16 +109,18 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Título</Label>
             <Input
               id="title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              {...register('title')}
               placeholder="Ex: Supermercado, Combustível..."
-              required
+              maxLength={200}
             />
+            {errors.title && (
+              <p className="text-sm text-destructive">{errors.title.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -94,18 +129,19 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
               id="amount"
               type="number"
               step="0.01"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              {...register('amount')}
               placeholder="0,00"
-              required
             />
+            {errors.amount && (
+              <p className="text-sm text-destructive">{errors.amount.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="category">Categoria</Label>
             <Select 
-              value={formData.category_id} 
-              onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+              value={categoryId || ''} 
+              onValueChange={(value) => setValue('category_id', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma categoria" />
@@ -125,6 +161,9 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
                 ))}
               </SelectContent>
             </Select>
+            {errors.category_id && (
+              <p className="text-sm text-destructive">{errors.category_id.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -132,20 +171,24 @@ export default function ExpenseForm({ isOpen, onClose, expense }: ExpenseFormPro
             <Input
               id="date"
               type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              required
+              {...register('date')}
             />
+            {errors.date && (
+              <p className="text-sm text-destructive">{errors.date.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              {...register('description')}
               placeholder="Descrição opcional..."
+              maxLength={1000}
             />
+            {errors.description && (
+              <p className="text-sm text-destructive">{errors.description.message}</p>
+            )}
           </div>
 
           <div className="flex gap-2 pt-4">

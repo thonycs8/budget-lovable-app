@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,6 +6,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useCategories, Category } from '@/hooks/useCategories';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const colors = [
+  '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
+  '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
+];
+
+const categorySchema = z.object({
+  name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Nome deve ter no máximo 100 caracteres'),
+  description: z.string().max(500, 'Descrição deve ter no máximo 500 caracteres').optional(),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Cor inválida'),
+});
+
+type CategoryFormData = z.infer<typeof categorySchema>;
 
 interface CategoryFormProps {
   isOpen: boolean;
@@ -13,39 +29,53 @@ interface CategoryFormProps {
   category?: Category;
 }
 
-const colors = [
-  '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
-  '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
-];
-
 export default function CategoryForm({ isOpen, onClose, category }: CategoryFormProps) {
   const { createCategory, updateCategory } = useCategories();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
-  const [formData, setFormData] = useState({
-    name: category?.name || '',
-    description: category?.description || '',
-    color: category?.color || colors[0],
+  const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm<CategoryFormData>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      color: colors[0],
+    }
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (category) {
-        await updateCategory(category.id, formData);
-      } else {
-        await createCategory(formData);
-      }
-
-      onClose();
-      setFormData({
+  useEffect(() => {
+    if (category) {
+      reset({
+        name: category.name,
+        description: category.description || '',
+        color: category.color || colors[0],
+      });
+    } else if (isOpen) {
+      reset({
         name: '',
         description: '',
         color: colors[0],
       });
+    }
+  }, [category, reset, isOpen]);
+
+  const onSubmit = async (data: CategoryFormData) => {
+    setLoading(true);
+
+    try {
+      const categoryData = {
+        name: data.name.trim(),
+        description: data.description?.trim() || '',
+        color: data.color,
+      };
+
+      if (category) {
+        await updateCategory(category.id, categoryData);
+      } else {
+        await createCategory(categoryData);
+      }
+
+      onClose();
     } catch (error) {
       toast({
         title: "Erro",
@@ -57,6 +87,8 @@ export default function CategoryForm({ isOpen, onClose, category }: CategoryForm
     }
   };
 
+  const selectedColor = watch('color');
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -66,26 +98,31 @@ export default function CategoryForm({ isOpen, onClose, category }: CategoryForm
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nome</Label>
             <Input
               id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              {...register('name')}
               placeholder="Ex: Alimentação, Transporte..."
-              required
+              maxLength={100}
             />
+            {errors.name && (
+              <p className="text-sm text-destructive">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              {...register('description')}
               placeholder="Descrição opcional..."
+              maxLength={500}
             />
+            {errors.description && (
+              <p className="text-sm text-destructive">{errors.description.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -96,13 +133,16 @@ export default function CategoryForm({ isOpen, onClose, category }: CategoryForm
                   key={color}
                   type="button"
                   className={`w-8 h-8 rounded-full border-2 ${
-                    formData.color === color ? 'border-primary' : 'border-muted'
+                    selectedColor === color ? 'border-primary' : 'border-muted'
                   }`}
                   style={{ backgroundColor: color }}
-                  onClick={() => setFormData({ ...formData, color })}
+                  onClick={() => setValue('color', color)}
                 />
               ))}
             </div>
+            {errors.color && (
+              <p className="text-sm text-destructive">{errors.color.message}</p>
+            )}
           </div>
 
           <div className="flex gap-2 pt-4">

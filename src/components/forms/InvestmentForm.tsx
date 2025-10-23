@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,12 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { useInvestments, Investment } from '@/hooks/useInvestments';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface InvestmentFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  investment?: Investment;
-}
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 const investmentTypes = [
   'Ações',
@@ -26,46 +23,89 @@ const investmentTypes = [
   'Outros'
 ];
 
+const investmentSchema = z.object({
+  title: z.string().trim().min(1, 'Título é obrigatório').max(200, 'Título deve ter no máximo 200 caracteres'),
+  amount: z.string().min(1, 'Valor é obrigatório').refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0 && num <= 999999999.99;
+  }, 'Valor deve ser positivo e menor que 1 bilhão'),
+  current_value: z.string().optional().refine((val) => {
+    if (!val || val === '') return true;
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 999999999.99;
+  }, 'Valor atual deve ser positivo e menor que 1 bilhão'),
+  investment_type: z.string().min(1, 'Tipo de investimento é obrigatório'),
+  purchase_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
+  description: z.string().max(1000, 'Descrição deve ter no máximo 1000 caracteres').optional(),
+});
+
+type InvestmentFormData = z.infer<typeof investmentSchema>;
+
+interface InvestmentFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  investment?: Investment;
+}
+
 export default function InvestmentForm({ isOpen, onClose, investment }: InvestmentFormProps) {
   const { createInvestment, updateInvestment } = useInvestments();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
-  const [formData, setFormData] = useState({
-    title: investment?.title || '',
-    amount: investment?.amount?.toString() || '',
-    current_value: investment?.current_value?.toString() || '',
-    investment_type: investment?.investment_type || '',
-    description: investment?.description || '',
-    purchase_date: investment?.purchase_date || new Date().toISOString().split('T')[0],
+  const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm<InvestmentFormData>({
+    resolver: zodResolver(investmentSchema),
+    defaultValues: {
+      title: '',
+      amount: '',
+      current_value: '',
+      investment_type: '',
+      purchase_date: new Date().toISOString().split('T')[0],
+      description: '',
+    }
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const data = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        current_value: formData.current_value ? parseFloat(formData.current_value) : null,
-      };
-
-      if (investment) {
-        await updateInvestment(investment.id, data);
-      } else {
-        await createInvestment(data);
-      }
-
-      onClose();
-      setFormData({
+  useEffect(() => {
+    if (investment) {
+      reset({
+        title: investment.title,
+        amount: investment.amount.toString(),
+        current_value: investment.current_value?.toString() || '',
+        investment_type: investment.investment_type,
+        purchase_date: investment.purchase_date,
+        description: investment.description || '',
+      });
+    } else if (isOpen) {
+      reset({
         title: '',
         amount: '',
         current_value: '',
         investment_type: '',
-        description: '',
         purchase_date: new Date().toISOString().split('T')[0],
+        description: '',
       });
+    }
+  }, [investment, reset, isOpen]);
+
+  const onSubmit = async (data: InvestmentFormData) => {
+    setLoading(true);
+
+    try {
+      const investmentData = {
+        title: data.title.trim(),
+        amount: parseFloat(data.amount),
+        current_value: data.current_value ? parseFloat(data.current_value) : null,
+        investment_type: data.investment_type,
+        purchase_date: data.purchase_date,
+        description: data.description?.trim() || '',
+      };
+
+      if (investment) {
+        await updateInvestment(investment.id, investmentData);
+      } else {
+        await createInvestment(investmentData);
+      }
+
+      onClose();
     } catch (error) {
       toast({
         title: "Erro",
@@ -77,6 +117,8 @@ export default function InvestmentForm({ isOpen, onClose, investment }: Investme
     }
   };
 
+  const investmentType = watch('investment_type');
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -86,16 +128,18 @@ export default function InvestmentForm({ isOpen, onClose, investment }: Investme
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Título</Label>
             <Input
               id="title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              {...register('title')}
               placeholder="Ex: PETR4, Tesouro SELIC..."
-              required
+              maxLength={200}
             />
+            {errors.title && (
+              <p className="text-sm text-destructive">{errors.title.message}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -105,11 +149,12 @@ export default function InvestmentForm({ isOpen, onClose, investment }: Investme
                 id="amount"
                 type="number"
                 step="0.01"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                {...register('amount')}
                 placeholder="0,00"
-                required
               />
+              {errors.amount && (
+                <p className="text-sm text-destructive">{errors.amount.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -118,18 +163,20 @@ export default function InvestmentForm({ isOpen, onClose, investment }: Investme
                 id="current_value"
                 type="number"
                 step="0.01"
-                value={formData.current_value}
-                onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
+                {...register('current_value')}
                 placeholder="0,00"
               />
+              {errors.current_value && (
+                <p className="text-sm text-destructive">{errors.current_value.message}</p>
+              )}
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="investment_type">Tipo de Investimento</Label>
             <Select 
-              value={formData.investment_type} 
-              onValueChange={(value) => setFormData({ ...formData, investment_type: value })}
+              value={investmentType} 
+              onValueChange={(value) => setValue('investment_type', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo" />
@@ -142,6 +189,9 @@ export default function InvestmentForm({ isOpen, onClose, investment }: Investme
                 ))}
               </SelectContent>
             </Select>
+            {errors.investment_type && (
+              <p className="text-sm text-destructive">{errors.investment_type.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -149,20 +199,24 @@ export default function InvestmentForm({ isOpen, onClose, investment }: Investme
             <Input
               id="purchase_date"
               type="date"
-              value={formData.purchase_date}
-              onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-              required
+              {...register('purchase_date')}
             />
+            {errors.purchase_date && (
+              <p className="text-sm text-destructive">{errors.purchase_date.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              {...register('description')}
               placeholder="Descrição opcional..."
+              maxLength={1000}
             />
+            {errors.description && (
+              <p className="text-sm text-destructive">{errors.description.message}</p>
+            )}
           </div>
 
           <div className="flex gap-2 pt-4">
