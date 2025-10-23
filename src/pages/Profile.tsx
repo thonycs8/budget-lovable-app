@@ -84,13 +84,22 @@ export default function Profile() {
     setSaving(true);
 
     try {
+      const profileData: any = {
+        user_id: user?.id,
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+      };
+
+      // Include id if profile already exists
+      if (profile?.id) {
+        profileData.id = profile.id;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user?.id,
-          full_name: formData.full_name,
-          email: formData.email,
-          phone: formData.phone,
+        .upsert(profileData, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
