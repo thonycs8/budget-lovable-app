@@ -44,6 +44,57 @@ export type Database = {
         }
         Relationships: []
       }
+      debts: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          interest_rate: number
+          monthly_payment: number
+          name: string
+          remaining_amount: number
+          start_date: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          interest_rate?: number
+          monthly_payment: number
+          name: string
+          remaining_amount: number
+          start_date: string
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          interest_rate?: number
+          monthly_payment?: number
+          name?: string
+          remaining_amount?: number
+          start_date?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expense_predictions: {
         Row: {
           category_id: string | null

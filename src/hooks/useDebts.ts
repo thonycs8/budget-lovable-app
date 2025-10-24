@@ -38,7 +38,7 @@ export function useDebts() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDebts(data || []);
+      setDebts((data || []) as Debt[]);
     } catch (error: any) {
       console.error('Error fetching debts:', error);
       toast.error('Erro ao carregar dívidas');
@@ -58,9 +58,9 @@ export function useDebts() {
         .single();
 
       if (error) throw error;
-      setDebts([data, ...debts]);
+      setDebts([data as Debt, ...debts]);
       toast.success('Dívida cadastrada com sucesso');
-      return data;
+      return data as Debt;
     } catch (error: any) {
       console.error('Error creating debt:', error);
       toast.error('Erro ao cadastrar dívida');
@@ -78,9 +78,9 @@ export function useDebts() {
         .single();
 
       if (error) throw error;
-      setDebts(debts.map(d => d.id === id ? data : d));
+      setDebts(debts.map(d => d.id === id ? data as Debt : d));
       toast.success('Dívida atualizada com sucesso');
-      return data;
+      return data as Debt;
     } catch (error: any) {
       console.error('Error updating debt:', error);
       toast.error('Erro ao atualizar dívida');

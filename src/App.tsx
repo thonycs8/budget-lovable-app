@@ -17,6 +17,7 @@ import Expenses from "./pages/Expenses";
 import Categories from "./pages/Categories";
 import Calendar from "./pages/Calendar";
 import Payables from "./pages/Payables";
+import Debts from "./pages/Debts";
 import Investments from "./pages/Investments";
 import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
@@ -58,6 +59,7 @@ const AppContent = () => {
                         <Route path="/expenses" element={<Expenses />} />
                         <Route path="/categories" element={<Categories />} />
                         <Route path="/payables" element={<Payables />} />
+                        <Route path="/debts" element={<Debts />} />
                         <Route path="/investments" element={<Investments />} />
                         <Route path="/alerts" element={<Alerts />} />
                         <Route path="/settings" element={<Settings />} />

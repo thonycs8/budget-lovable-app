@@ -56,11 +56,14 @@ export function DebtForm({ onSuccess }: DebtFormProps) {
     setLoading(true);
     try {
       await createDebt({
-        ...values,
+        name: values.name,
+        description: values.description,
         total_amount: parseFloat(values.total_amount),
         remaining_amount: parseFloat(values.remaining_amount),
         interest_rate: parseFloat(values.interest_rate),
         monthly_payment: parseFloat(values.monthly_payment),
+        start_date: values.start_date,
+        category: values.category,
         status: 'active',
       });
       form.reset();

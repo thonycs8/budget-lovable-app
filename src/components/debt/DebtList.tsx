@@ -26,7 +26,7 @@ const categoryLabels = {
 
 const statusLabels = {
   active: { label: 'Ativa', variant: 'default' as const },
-  paid: { label: 'Paga', variant: 'success' as const },
+  paid: { label: 'Paga', variant: 'secondary' as const },
   overdue: { label: 'Atrasada', variant: 'destructive' as const },
 };
 
