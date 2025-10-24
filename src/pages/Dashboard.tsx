@@ -334,8 +334,8 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* Balance Prediction Section */}
-      <BalancePrediction />
+      {/* Balance Prediction Section - Temporarily Disabled */}
+      {/* <BalancePrediction /> */}
 
       {/* Recent Transactions */}
       <Card className="animate-in fade-in duration-700 delay-500 hover:shadow-lg transition-shadow">
