@@ -14,7 +14,10 @@ import { useAuthStore, authSelectors } from '@/stores/authStore';
  */
 export const useOfflineSync = () => {
   const userId = useAuthStore(authSelectors.userId);
-  const syncStatus = useFinancialStore(financialSelectors.syncStatus);
+  const isSyncing = useFinancialStore((state) => state.isSyncing);
+  const lastSync = useFinancialStore((state) => state.lastSync);
+  const pendingChanges = useFinancialStore((state) => state.pendingChanges);
+  const needsSync = useFinancialStore(financialSelectors.needsSync);
   const markSynced = useFinancialStore((state) => state.markSynced);
   const setSyncing = useFinancialStore((state) => state.setSyncing);
 
@@ -22,7 +25,7 @@ export const useOfflineSync = () => {
    * Sincronizar dados com o servidor
    */
   const syncData = useCallback(async () => {
-    if (!userId || syncStatus.isSyncing || !syncStatus.needsSync) {
+    if (!userId || isSyncing || !needsSync) {
       return;
     }
 
@@ -52,7 +55,7 @@ export const useOfflineSync = () => {
       }
       setSyncing(false);
     }
-  }, [userId, syncStatus, setSyncing, markSynced]);
+  }, [userId, isSyncing, needsSync, setSyncing, markSynced]);
 
   /**
    * Monitorar status da rede
@@ -84,22 +87,27 @@ export const useOfflineSync = () => {
    * Sincronização periódica (a cada 5 minutos se houver mudanças)
    */
   useEffect(() => {
-    if (!syncStatus.needsSync || !navigator.onLine) {
+    if (!needsSync || !navigator.onLine) {
       return;
     }
 
     const interval = setInterval(() => {
-      if (navigator.onLine && syncStatus.needsSync) {
+      if (navigator.onLine && needsSync) {
         syncData();
       }
     }, 5 * 60 * 1000); // 5 minutos
 
     return () => clearInterval(interval);
-  }, [syncData, syncStatus.needsSync]);
+  }, [syncData, needsSync]);
 
   return {
     syncData,
-    syncStatus,
+    syncStatus: {
+      isSyncing,
+      lastSync,
+      pendingChanges,
+      needsSync,
+    },
     isOnline: navigator.onLine,
   };
 };
@@ -108,7 +116,10 @@ export const useOfflineSync = () => {
  * Indicador de status de sincronização
  */
 export const useSyncIndicator = () => {
-  const syncStatus = useFinancialStore(financialSelectors.syncStatus);
+  const isSyncing = useFinancialStore((state) => state.isSyncing);
+  const lastSync = useFinancialStore((state) => state.lastSync);
+  const pendingChanges = useFinancialStore((state) => state.pendingChanges);
+  const needsSync = useFinancialStore(financialSelectors.needsSync);
   const isOnline = navigator.onLine;
 
   const getStatus = () => {
@@ -120,7 +131,7 @@ export const useSyncIndicator = () => {
       };
     }
 
-    if (syncStatus.isSyncing) {
+    if (isSyncing) {
       return {
         message: 'Sincronizando...',
         variant: 'secondary' as const,
@@ -128,16 +139,16 @@ export const useSyncIndicator = () => {
       };
     }
 
-    if (syncStatus.needsSync) {
+    if (needsSync) {
       return {
-        message: `${syncStatus.pendingChanges} alteração(ões) pendente(s)`,
+        message: `${pendingChanges} alteração(ões) pendente(s)`,
         variant: 'outline' as const,
         icon: '⏳',
       };
     }
 
-    if (syncStatus.lastSync) {
-      const lastSyncDate = new Date(syncStatus.lastSync);
+    if (lastSync) {
+      const lastSyncDate = new Date(lastSync);
       const now = new Date();
       const diffMinutes = Math.floor((now.getTime() - lastSyncDate.getTime()) / 60000);
       
