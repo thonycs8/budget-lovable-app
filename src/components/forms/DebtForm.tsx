@@ -54,8 +54,9 @@ export function DebtForm({ onSuccess }: DebtFormProps) {
 
   const onSubmit = async (values: DebtFormValues) => {
     setLoading(true);
+    console.log('DebtForm: Submitting debt', values);
     try {
-      await createDebt({
+      const result = await createDebt({
         name: values.name,
         description: values.description,
         total_amount: parseFloat(values.total_amount),
@@ -66,6 +67,7 @@ export function DebtForm({ onSuccess }: DebtFormProps) {
         category: values.category,
         status: 'active',
       });
+      console.log('DebtForm: Debt created successfully', result);
       form.reset();
       onSuccess?.();
     } catch (error) {
