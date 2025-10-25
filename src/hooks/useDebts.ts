@@ -51,22 +51,18 @@ export function useDebts() {
   };
 
   const createDebt = async (debt: Omit<Debt, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    console.log('useDebts: createDebt called', { userId, debt });
     if (!userId) {
-      console.error('useDebts: No userId available');
       toast.error('Você precisa estar autenticado para cadastrar dívidas');
       return;
     }
 
     try {
-      console.log('useDebts: Inserting debt into database', { ...debt, user_id: userId });
       const { data, error } = await supabase
         .from('debts')
         .insert([{ ...debt, user_id: userId }])
         .select()
         .single();
 
-      console.log('useDebts: Insert result', { data, error });
       if (error) throw error;
       setDebts([data as Debt, ...debts]);
       toast.success('Dívida cadastrada com sucesso');
