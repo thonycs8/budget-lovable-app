@@ -127,6 +127,39 @@ export function useDebts() {
 
   useEffect(() => {
     fetchDebts();
+
+    if (!userId) return;
+
+    // Setup realtime subscription
+    const channel = supabase
+      .channel('debts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'debts',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setDebts((current) => [payload.new as Debt, ...current]);
+          } else if (payload.eventType === 'UPDATE') {
+            setDebts((current) =>
+              current.map((d) => (d.id === payload.new.id ? payload.new as Debt : d))
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setDebts((current) => current.filter((d) => d.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   return {
