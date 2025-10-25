@@ -27,7 +27,10 @@ export function useDebts() {
   const userId = useAuthStore(authSelectors.userId);
 
   const fetchDebts = async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     
     try {
       setLoading(true);
