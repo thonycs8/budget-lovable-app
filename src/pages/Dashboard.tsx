@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, TrendingDown, PiggyBank, AlertTriangle, Target } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, PiggyBank, AlertTriangle, Target, Wallet } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CategoryChart } from '@/components/dashboard/CategoryChart';
 import { BalancePrediction } from '@/components/dashboard/BalancePrediction';
@@ -9,6 +9,7 @@ import { useIncome } from '@/hooks/useIncome';
 import { useExpenses } from '@/hooks/useExpenses';
 import { usePayables } from '@/hooks/usePayables';
 import { useInvestments } from '@/hooks/useInvestments';
+import { useDebts } from '@/hooks/useDebts';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -17,10 +18,11 @@ export function Dashboard() {
   const { expenses, loading: expensesLoading } = useExpenses();
   const { payables, loading: payablesLoading } = usePayables();
   const { investments, loading: investmentsLoading } = useInvestments();
+  const { debts, loading: debtsLoading } = useDebts();
   const { categories } = useCategories();
   const { formatCurrency } = useCurrency();
 
-  if (incomeLoading || expensesLoading || payablesLoading || investmentsLoading) {
+  if (incomeLoading || expensesLoading || payablesLoading || investmentsLoading || debtsLoading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="space-y-2">
@@ -53,6 +55,12 @@ export function Dashboard() {
   const totalInvested = investments.reduce((sum, inv) => sum + Number(inv.amount), 0);
   const totalCurrentValue = investments.reduce((sum, inv) => sum + Number(inv.current_value || inv.amount), 0);
   const investmentGain = totalCurrentValue - totalInvested;
+
+  // Calculate debt totals
+  const totalDebt = debts.reduce((sum, debt) => sum + debt.remaining_amount, 0);
+  const totalPaidDebt = debts.reduce((sum, debt) => sum + (debt.total_amount - debt.remaining_amount), 0);
+  const monthlyDebtPayments = debts.filter(d => d.status === 'active').reduce((sum, debt) => sum + debt.monthly_payment, 0);
+  const activeDebts = debts.filter(d => d.remaining_amount > 0);
 
   // Calculate expense data for chart
   const expensesByCategory = expenses.reduce((acc, expense) => {
@@ -140,7 +148,7 @@ export function Dashboard() {
       )}
 
       {/* Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 animate-in fade-in duration-700 delay-150">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in duration-700 delay-150">
         <MetricCard
           title="Total de Receitas"
           value={formatCurrency(totalIncome)}
@@ -161,6 +169,12 @@ export function Dashboard() {
           icon={<DollarSign className="h-4 w-4" />}
           variant={netProfit >= 0 ? 'income' : 'expense'}
           trend={{ value: 15.3, isPositive: netProfit >= 0 }}
+        />
+        <MetricCard
+          title="Dívidas Ativas"
+          value={formatCurrency(totalDebt)}
+          icon={<Wallet className="h-4 w-4" />}
+          variant="expense"
         />
         <MetricCard
           title="Contas a Pagar"
@@ -196,8 +210,74 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Investment and Payables Summary */}
-      <div className="grid gap-6 md:grid-cols-2 animate-in fade-in duration-700 delay-450">
+      {/* Debt, Investment and Payables Summary */}
+      <div className="grid gap-6 md:grid-cols-3 animate-in fade-in duration-700 delay-450">
+        {/* Debt Summary */}
+        <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-destructive">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <Wallet className="h-5 w-5 text-destructive" />
+              </div>
+              Resumo de Dívidas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {debts.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-destructive/5 to-transparent">
+                    <p className="text-sm text-muted-foreground mb-1">Total em Dívida</p>
+                    <p className="text-xl font-bold text-destructive">{formatCurrency(totalDebt)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-income/5 to-transparent">
+                    <p className="text-sm text-muted-foreground mb-1">Já Pago</p>
+                    <p className="text-xl font-bold text-income">{formatCurrency(totalPaidDebt)}</p>
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <span className="text-sm text-muted-foreground">Parcela Mensal</span>
+                    <span className="font-semibold text-warning">
+                      {formatCurrency(monthlyDebtPayments)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <span className="text-sm text-muted-foreground">Dívidas Ativas</span>
+                    <span className="font-semibold">
+                      {activeDebts.length}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium mb-3">Maiores Dívidas:</p>
+                  {activeDebts
+                    .sort((a, b) => b.remaining_amount - a.remaining_amount)
+                    .slice(0, 3)
+                    .map((debt, idx) => (
+                      <div 
+                        key={debt.id} 
+                        className="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:translate-x-1"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        <span className="truncate flex-1">{debt.name}</span>
+                        <span className="font-medium text-destructive ml-2">{formatCurrency(debt.remaining_amount)}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Wallet className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhuma dívida</h3>
+                <p className="text-muted-foreground mb-4">
+                  Você está livre de dívidas!
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Investment Summary */}
         <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-investment">
           <CardHeader>
