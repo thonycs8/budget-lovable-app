@@ -178,7 +178,43 @@ export const usePayables = () => {
   };
 
   useEffect(() => {
-    fetchPayables();
+    if (user) {
+      fetchPayables();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('payables-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'payables',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setPayables(prev => [...prev, payload.new as Payable].sort((a, b) => 
+                new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+              ));
+            } else if (payload.eventType === 'UPDATE') {
+              setPayables(prev => prev.map(item => 
+                item.id === payload.new.id ? payload.new as Payable : item
+              ));
+            } else if (payload.eventType === 'DELETE') {
+              setPayables(prev => prev.filter(item => item.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setPayables([]);
+      setLoading(false);
+    }
   }, [user]);
 
   return {

@@ -162,7 +162,41 @@ export const useIncome = () => {
   };
 
   useEffect(() => {
-    fetchIncome();
+    if (user) {
+      fetchIncome();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('income-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'income',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setIncome(prev => [payload.new as Income, ...prev]);
+            } else if (payload.eventType === 'UPDATE') {
+              setIncome(prev => prev.map(item => 
+                item.id === payload.new.id ? payload.new as Income : item
+              ));
+            } else if (payload.eventType === 'DELETE') {
+              setIncome(prev => prev.filter(item => item.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setIncome([]);
+      setLoading(false);
+    }
   }, [user]);
 
   return {

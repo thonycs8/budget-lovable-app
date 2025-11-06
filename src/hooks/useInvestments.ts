@@ -137,7 +137,41 @@ export const useInvestments = () => {
   };
 
   useEffect(() => {
-    fetchInvestments();
+    if (user) {
+      fetchInvestments();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('investments-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'investments',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setInvestments(prev => [payload.new as Investment, ...prev]);
+            } else if (payload.eventType === 'UPDATE') {
+              setInvestments(prev => prev.map(item => 
+                item.id === payload.new.id ? payload.new as Investment : item
+              ));
+            } else if (payload.eventType === 'DELETE') {
+              setInvestments(prev => prev.filter(item => item.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setInvestments([]);
+      setLoading(false);
+    }
   }, [user]);
 
   return {

@@ -162,7 +162,41 @@ export const useExpenses = () => {
   };
 
   useEffect(() => {
-    fetchExpenses();
+    if (user) {
+      fetchExpenses();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('expenses-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'expenses',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setExpenses(prev => [payload.new as Expense, ...prev]);
+            } else if (payload.eventType === 'UPDATE') {
+              setExpenses(prev => prev.map(item => 
+                item.id === payload.new.id ? payload.new as Expense : item
+              ));
+            } else if (payload.eventType === 'DELETE') {
+              setExpenses(prev => prev.filter(item => item.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setExpenses([]);
+      setLoading(false);
+    }
   }, [user]);
 
   return {

@@ -134,7 +134,41 @@ export const useCategories = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
+    if (user) {
+      fetchCategories();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('categories-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'categories',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setCategories(prev => [...prev, payload.new as Category]);
+            } else if (payload.eventType === 'UPDATE') {
+              setCategories(prev => prev.map(item => 
+                item.id === payload.new.id ? payload.new as Category : item
+              ));
+            } else if (payload.eventType === 'DELETE') {
+              setCategories(prev => prev.filter(item => item.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setCategories([]);
+      setLoading(false);
+    }
   }, [user]);
 
   return {
