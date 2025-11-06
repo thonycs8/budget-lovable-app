@@ -97,7 +97,7 @@ export function Header() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <span className="text-lg font-bold">G</span>
                   </div>
-                  GestFin
+                  gest-first
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 space-y-1">
@@ -145,7 +145,7 @@ export function Header() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                 <span className="text-lg font-bold">G</span>
               </div>
-              <span className="hidden font-semibold lg:inline-block">GestFin</span>
+              <span className="hidden font-semibold lg:inline-block">gest-first</span>
             </Button>
 
             {/* Desktop Navigation Menu */}
