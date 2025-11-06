@@ -1,10 +1,10 @@
 import { Folder } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCategories } from '@/hooks/useCategories';
+import { useOptimizedCategories } from '@/hooks/useOptimizedCategories';
 import { Badge } from '@/components/ui/badge';
 
 export default function Categories() {
-  const { categories, loading } = useCategories();
+  const { categories, isLoading: loading } = useOptimizedCategories();
 
   if (loading) {
     return (
