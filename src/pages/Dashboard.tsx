@@ -12,6 +12,7 @@ import { useInvestments } from '@/hooks/useInvestments';
 import { useDebts } from '@/hooks/useDebts';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
+import { AdBanner } from '@/components/ads/AdBanner';
 
 export function Dashboard() {
   const { income, loading: incomeLoading } = useIncome();
@@ -193,6 +194,9 @@ export function Dashboard() {
           }}
         />
       </div>
+
+      {/* Ad Banner */}
+      <AdBanner slot="1234567890" format="horizontal" className="animate-in fade-in duration-700 delay-250" />
 
       {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2 animate-in fade-in duration-700 delay-300">

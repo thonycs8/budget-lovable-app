@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
+import { AdBanner } from '@/components/ads/AdBanner';
 
 export default function Expenses() {
   const { expenses, loading, deleteExpense } = useExpenses();
@@ -83,6 +84,9 @@ export default function Expenses() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Ad Banner */}
+      <AdBanner slot="2345678901" format="horizontal" />
 
       {/* Filters */}
       <Card>
