@@ -15,17 +15,23 @@ interface Translations {
 
 export const translations: Translations = {
   // Hero Section
-  'hero.title': {
+  'hero.badge': {
     pt: 'Gestão Financeira Inteligente',
     en: 'Intelligent Financial Management',
     es: 'Gestión Financiera Inteligente',
     fr: 'Gestion Financière Intelligente'
   },
+  'hero.title': {
+    pt: 'Transforme sua gestão financeira',
+    en: 'Transform your financial management',
+    es: 'Transforma tu gestión financiera',
+    fr: 'Transformez votre gestion financière'
+  },
   'hero.subtitle': {
-    pt: 'Controle suas finanças pessoais e empresariais em um só lugar. Previsões inteligentes, alertas automáticos e relatórios detalhados.',
-    en: 'Control your personal and business finances in one place. Smart predictions, automatic alerts, and detailed reports.',
-    es: 'Controla tus finanzas personales y empresariales en un solo lugar. Predicciones inteligentes, alertas automáticas e informes detallados.',
-    fr: 'Contrôlez vos finances personnelles et professionnelles en un seul endroit. Prévisions intelligentes, alertes automatiques et rapports détaillés.'
+    pt: 'Controle total das suas finanças com análises inteligentes e visualizações em tempo real',
+    en: 'Total control of your finances with smart analytics and real-time visualizations',
+    es: 'Control total de tus finanzas con análisis inteligentes y visualizaciones en tiempo real',
+    fr: 'Contrôle total de vos finances avec des analyses intelligentes et des visualisations en temps réel'
   },
   'hero.cta.primary': {
     pt: 'Começar Gratuitamente',
@@ -47,16 +53,16 @@ export const translations: Translations = {
     fr: 'Fonctionnalités Puissantes'
   },
   'features.predictions.title': {
-    pt: 'Previsões Inteligentes',
-    en: 'Smart Predictions',
-    es: 'Predicciones Inteligentes',
-    fr: 'Prévisions Intelligentes'
+    pt: 'Análises Inteligentes',
+    en: 'Smart Analytics',
+    es: 'Análisis Inteligentes',
+    fr: 'Analyses Intelligentes'
   },
   'features.predictions.desc': {
-    pt: 'IA que prevê seu saldo futuro baseado em padrões de gastos',
-    en: 'AI that predicts your future balance based on spending patterns',
-    es: 'IA que predice tu saldo futuro basado en patrones de gasto',
-    fr: 'IA qui prédit votre solde futur basé sur les modèles de dépenses'
+    pt: 'Visualize seus padrões de gastos e receitas com gráficos detalhados',
+    en: 'Visualize your spending and income patterns with detailed charts',
+    es: 'Visualiza tus patrones de gastos e ingresos con gráficos detallados',
+    fr: 'Visualisez vos modèles de dépenses et revenus avec des graphiques détaillés'
   },
   'features.categories.title': {
     pt: 'Categorias Personalizadas',
@@ -162,28 +168,16 @@ export const translations: Translations = {
     fr: 'Catégories personnalisées'
   },
   'pricing.feature.reports': {
-    pt: 'Relatórios básicos',
-    en: 'Basic reports',
-    es: 'Informes básicos',
-    fr: 'Rapports de base'
-  },
-  'pricing.feature.predictions': {
-    pt: 'Previsões com IA',
-    en: 'AI predictions',
-    es: 'Predicciones con IA',
-    fr: 'Prévisions IA'
+    pt: 'Relatórios detalhados',
+    en: 'Detailed reports',
+    es: 'Informes detallados',
+    fr: 'Rapports détaillés'
   },
   'pricing.feature.alerts': {
-    pt: 'Alertas avançados',
-    en: 'Advanced alerts',
-    es: 'Alertas avanzadas',
-    fr: 'Alertes avancées'
-  },
-  'pricing.feature.support': {
-    pt: 'Suporte prioritário',
-    en: 'Priority support',
-    es: 'Soporte prioritario',
-    fr: 'Support prioritaire'
+    pt: 'Alertas inteligentes',
+    en: 'Smart alerts',
+    es: 'Alertas inteligentes',
+    fr: 'Alertes intelligentes'
   },
   'pricing.feature.export': {
     pt: 'Exportação de dados',

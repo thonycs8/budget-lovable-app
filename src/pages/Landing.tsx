@@ -69,9 +69,7 @@ export default function Landing() {
 
   const premiumPlanFeatures = [
     ...freePlanFeatures,
-    t('pricing.feature.predictions'),
     t('pricing.feature.alerts'),
-    t('pricing.feature.support'),
     t('pricing.feature.export')
   ];
 
@@ -137,29 +135,29 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <Badge className="w-fit">✨ Novo: Previsões com IA</Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
+      <section className="container mx-auto px-4 py-32 lg:py-48">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-10">
+            <Badge className="w-fit text-base px-4 py-2">✨ {t('hero.badge')}</Badge>
+            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-tight">
               {t('hero.title')}
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-2xl text-muted-foreground leading-relaxed">
               {t('hero.subtitle')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" onClick={() => navigate('/auth')} className="text-lg">
+            <div className="flex flex-col sm:flex-row gap-6">
+              <Button size="lg" onClick={() => navigate('/auth')} className="text-xl px-8 py-6 h-auto">
                 {t('hero.cta.primary')}
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate('/dashboard')}>
+              <Button size="lg" variant="outline" onClick={() => navigate('/dashboard')} className="text-xl px-8 py-6 h-auto">
                 {t('hero.cta.secondary')}
               </Button>
             </div>
           </div>
 
           {/* Phone Mockup */}
-          <div className="relative">
-            <div className="relative mx-auto w-[300px] h-[600px] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[3rem] p-4 shadow-2xl">
+          <div className="relative lg:scale-110">
+            <div className="relative mx-auto w-[340px] h-[680px] bg-gradient-to-br from-primary/30 to-secondary/30 rounded-[3rem] p-5 shadow-2xl">
               <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden shadow-inner">
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
