@@ -11,6 +11,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { cn } from "@/lib/utils";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Income from "./pages/Income";
 import Expenses from "./pages/Expenses";
@@ -42,6 +43,7 @@ const AppContent = () => {
       <Sonner />
       <BrowserRouter>
             <Routes>
+              <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/*" element={
                 <div className="min-h-screen flex flex-col w-full">
@@ -53,7 +55,7 @@ const AppContent = () => {
                       sidebarCollapsed ? "md:ml-16" : "md:ml-64"
                     )}>
                       <Routes>
-                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/calendar" element={<Calendar />} />
                         <Route path="/income" element={<Income />} />
                         <Route path="/expenses" element={<Expenses />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type Currency = 'EUR' | 'BRL' | 'USD';
+export type Currency = 'EUR' | 'BRL' | 'USD' | 'GBP' | 'CAD' | 'AUD' | 'JPY' | 'CHF';
 
 interface CurrencyConfig {
   code: Currency;
@@ -26,7 +26,37 @@ export const CURRENCIES: Record<Currency, CurrencyConfig> = {
     code: 'USD',
     symbol: '$',
     locale: 'en-US',
-    name: 'Dólar Americano'
+    name: 'US Dollar'
+  },
+  GBP: {
+    code: 'GBP',
+    symbol: '£',
+    locale: 'en-GB',
+    name: 'British Pound'
+  },
+  CAD: {
+    code: 'CAD',
+    symbol: 'CA$',
+    locale: 'en-CA',
+    name: 'Canadian Dollar'
+  },
+  AUD: {
+    code: 'AUD',
+    symbol: 'A$',
+    locale: 'en-AU',
+    name: 'Australian Dollar'
+  },
+  JPY: {
+    code: 'JPY',
+    symbol: '¥',
+    locale: 'ja-JP',
+    name: 'Japanese Yen'
+  },
+  CHF: {
+    code: 'CHF',
+    symbol: 'CHF',
+    locale: 'de-CH',
+    name: 'Swiss Franc'
   }
 };
 

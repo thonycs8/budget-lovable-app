@@ -32,7 +32,7 @@ import { PayableForm } from '@/components/forms/PayableForm';
 import InvestmentForm from '@/components/forms/InvestmentForm';
 
 const menuItems = [
-  { id: '/', label: 'Dashboard', icon: BarChart3 },
+  { id: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { id: '/calendar', label: 'Calendário', icon: Calendar },
   { id: '/income', label: 'Receitas', icon: TrendingUp },
   { id: '/expenses', label: 'Despesas', icon: TrendingDown },
@@ -139,7 +139,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/dashboard')}
               className="flex items-center gap-2 hover-scale transition-all duration-200"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
