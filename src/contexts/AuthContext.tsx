@@ -38,11 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Sync with authStore
         authStore.setSession(session);
-        
-        // Redirect to dashboard on successful sign in
-        if (event === 'SIGNED_IN' && session) {
-          window.location.href = '/dashboard';
-        }
       }
     );
 

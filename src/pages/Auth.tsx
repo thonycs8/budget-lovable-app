@@ -76,7 +76,8 @@ export default function Auth() {
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta.",
       });
-      // Navigation will be handled by AuthContext
+      navigate('/dashboard');
+      setLoading(false);
     }
   };
 

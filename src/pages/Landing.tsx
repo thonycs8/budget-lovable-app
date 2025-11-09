@@ -4,9 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
-import { 
+import {
   TrendingUp, 
   PieChart, 
   Bell, 
@@ -29,13 +27,6 @@ export default function Landing() {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
   const { currency, setCurrency, formatCurrency, currencies } = useCurrency();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard');
-    }
-  }, [user, loading, navigate]);
 
   const features = [
     {
