@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,9 +34,16 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard');
+    }
+  }, [user, authLoading, navigate]);
 
   const signInForm = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -63,14 +70,14 @@ export default function Auth() {
     
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta.",
       });
-      navigate('/dashboard');
+      // Navigation will be handled by AuthContext
     }
-    setLoading(false);
   };
 
   const handleSignUp = async (data: SignUpFormData) => {
