@@ -194,16 +194,24 @@ export default function Landing() {
                   </div>
 
                   <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
+                    {[
+                      { name: 'Supermercado', category: 'Alimentação', amount: -245.80, color: 'bg-red-500' },
+                      { name: 'Salário', category: 'Trabalho', amount: 4500.00, color: 'bg-green-500' },
+                      { name: 'Conta de Luz', category: 'Contas', amount: -128.50, color: 'bg-yellow-500' }
+                    ].map((transaction, i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 bg-primary/20 rounded-full"></div>
+                          <div className={`h-8 w-8 ${transaction.color} rounded-full flex items-center justify-center text-white text-xs font-bold`}>
+                            {transaction.name[0]}
+                          </div>
                           <div>
-                            <div className="h-3 w-20 bg-foreground/20 rounded"></div>
-                            <div className="h-2 w-16 bg-foreground/10 rounded mt-1"></div>
+                            <p className="text-xs font-medium">{transaction.name}</p>
+                            <p className="text-[10px] text-muted-foreground">{transaction.category}</p>
                           </div>
                         </div>
-                        <div className="h-3 w-12 bg-foreground/20 rounded"></div>
+                        <p className={`text-xs font-bold ${transaction.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {formatCurrency(Math.abs(transaction.amount))}
+                        </p>
                       </div>
                     ))}
                   </div>
