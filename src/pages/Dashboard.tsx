@@ -14,6 +14,47 @@ import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 import { AdBanner } from '@/components/ads/AdBanner';
 
+// Demo data
+const demoCategories = [
+  { id: 'demo-1', name: 'Alimentação', color: '#ef4444', user_id: 'demo', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: null },
+  { id: 'demo-2', name: 'Transporte', color: '#f59e0b', user_id: 'demo', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: null },
+  { id: 'demo-3', name: 'Salário', color: '#22c55e', user_id: 'demo', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: null },
+  { id: 'demo-4', name: 'Freelance', color: '#10b981', user_id: 'demo', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: null },
+  { id: 'demo-5', name: 'Lazer', color: '#8b5cf6', user_id: 'demo', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: null },
+  { id: 'demo-6', name: 'Contas', color: '#f97316', user_id: 'demo', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: null },
+];
+
+const demoExpenses = [
+  { id: 'demo-exp-1', user_id: 'demo', category_id: 'demo-1', amount: 580.50, date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Supermercado', description: 'Compras do mês', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-exp-2', user_id: 'demo', category_id: 'demo-2', amount: 120.00, date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Combustível', description: 'Gasolina', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-exp-3', user_id: 'demo', category_id: 'demo-5', amount: 250.00, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Cinema e Jantar', description: 'Final de semana', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-exp-4', user_id: 'demo', category_id: 'demo-6', amount: 195.30, date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Conta de Luz', description: 'Energia elétrica', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-exp-5', user_id: 'demo', category_id: 'demo-1', amount: 85.40, date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Restaurante', description: 'Almoço', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
+const demoIncome = [
+  { id: 'demo-inc-1', user_id: 'demo', category_id: 'demo-3', amount: 5500.00, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Salário Mensal', description: 'Empresa XYZ', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-inc-2', user_id: 'demo', category_id: 'demo-4', amount: 1200.00, date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Projeto Freelance', description: 'Desenvolvimento web', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-inc-3', user_id: 'demo', category_id: 'demo-4', amount: 800.00, date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Consultoria', description: 'Consultoria de TI', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
+const demoInvestments = [
+  { id: 'demo-inv-1', user_id: 'demo', amount: 5000, current_value: 5450.80, purchase_date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Tesouro Direto', investment_type: 'Renda Fixa', description: 'IPCA+ 2026', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-inv-2', user_id: 'demo', amount: 3000, current_value: 3180.00, purchase_date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'CDB Banco ABC', investment_type: 'Renda Fixa', description: '110% do CDI', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-inv-3', user_id: 'demo', amount: 2000, current_value: 1850.00, purchase_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], title: 'Ações', investment_type: 'Renda Variável', description: 'Carteira diversificada', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
+const demoDebts = [
+  { id: 'demo-debt-1', user_id: 'demo', name: 'Financiamento Carro', total_amount: 35000, remaining_amount: 18500, interest_rate: 1.2, monthly_payment: 850, start_date: new Date(Date.now() - 360 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], end_date: new Date(Date.now() + 360 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], category: 'Veículo', status: 'active', description: 'Financiamento em 48x', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-debt-2', user_id: 'demo', name: 'Cartão de Crédito', total_amount: 3200, remaining_amount: 3200, interest_rate: 8.5, monthly_payment: 320, start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], end_date: new Date(Date.now() + 270 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], category: 'Cartão', status: 'active', description: 'Parcelamento em 10x', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
+const demoPayables = [
+  { id: 'demo-pay-1', user_id: 'demo', category_id: 'demo-6', amount: 180.00, due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], is_paid: false, paid_date: null, title: 'Conta de Água', description: 'Vencimento próximo', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-pay-2', user_id: 'demo', category_id: 'demo-6', amount: 120.00, due_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], is_paid: false, paid_date: null, title: 'Internet', description: 'Mensalidade', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'demo-pay-3', user_id: 'demo', category_id: 'demo-6', amount: 89.90, due_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], is_paid: false, paid_date: null, title: 'Streaming', description: 'Assinatura mensal', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
 export function Dashboard() {
   const { income, loading: incomeLoading } = useIncome();
   const { expenses, loading: expensesLoading } = useExpenses();
@@ -22,6 +63,18 @@ export function Dashboard() {
   const { debts, loading: debtsLoading } = useDebts();
   const { categories } = useCategories();
   const { formatCurrency } = useCurrency();
+
+  // Check if we should use demo data (no real data available)
+  const hasNoData = income.length === 0 && expenses.length === 0 && payables.length === 0 && 
+                    investments.length === 0 && debts.length === 0;
+  
+  // Use demo data if no real data exists
+  const displayIncome = hasNoData ? demoIncome : income;
+  const displayExpenses = hasNoData ? demoExpenses : expenses;
+  const displayPayables = hasNoData ? demoPayables : payables;
+  const displayInvestments = hasNoData ? demoInvestments : investments;
+  const displayDebts = hasNoData ? demoDebts : debts;
+  const displayCategories = hasNoData ? demoCategories : categories;
 
   if (incomeLoading || expensesLoading || payablesLoading || investmentsLoading || debtsLoading) {
     return (
@@ -47,25 +100,25 @@ export function Dashboard() {
   }
 
   // Calculate totals
-  const totalIncome = income.reduce((sum, item) => sum + Number(item.amount), 0);
-  const totalExpenses = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
+  const totalIncome = displayIncome.reduce((sum, item) => sum + Number(item.amount), 0);
+  const totalExpenses = displayExpenses.reduce((sum, item) => sum + Number(item.amount), 0);
   const netProfit = totalIncome - totalExpenses;
-  const pendingPayables = payables.filter(p => !p.is_paid).reduce((sum, p) => sum + Number(p.amount), 0);
+  const pendingPayables = displayPayables.filter(p => !p.is_paid).reduce((sum, p) => sum + Number(p.amount), 0);
 
   // Calculate investment totals
-  const totalInvested = investments.reduce((sum, inv) => sum + Number(inv.amount), 0);
-  const totalCurrentValue = investments.reduce((sum, inv) => sum + Number(inv.current_value || inv.amount), 0);
+  const totalInvested = displayInvestments.reduce((sum, inv) => sum + Number(inv.amount), 0);
+  const totalCurrentValue = displayInvestments.reduce((sum, inv) => sum + Number(inv.current_value || inv.amount), 0);
   const investmentGain = totalCurrentValue - totalInvested;
 
   // Calculate debt totals
-  const totalDebt = debts.reduce((sum, debt) => sum + debt.remaining_amount, 0);
-  const totalPaidDebt = debts.reduce((sum, debt) => sum + (debt.total_amount - debt.remaining_amount), 0);
-  const monthlyDebtPayments = debts.filter(d => d.status === 'active').reduce((sum, debt) => sum + debt.monthly_payment, 0);
-  const activeDebts = debts.filter(d => d.remaining_amount > 0);
+  const totalDebt = displayDebts.reduce((sum, debt) => sum + debt.remaining_amount, 0);
+  const totalPaidDebt = displayDebts.reduce((sum, debt) => sum + (debt.total_amount - debt.remaining_amount), 0);
+  const monthlyDebtPayments = displayDebts.filter(d => d.status === 'active').reduce((sum, debt) => sum + debt.monthly_payment, 0);
+  const activeDebts = displayDebts.filter(d => d.remaining_amount > 0);
 
   // Calculate expense data for chart
-  const expensesByCategory = expenses.reduce((acc, expense) => {
-    const category = categories.find(cat => cat.id === expense.category_id);
+  const expensesByCategory = displayExpenses.reduce((acc, expense) => {
+    const category = displayCategories.find(cat => cat.id === expense.category_id);
     const categoryName = category?.name || 'Sem categoria';
     const existing = acc.find(item => item.name === categoryName);
     if (existing) {
@@ -81,8 +134,8 @@ export function Dashboard() {
   }, [] as Array<{ name: string; value: number; color: string }>);
 
   // Calculate income data for chart
-  const incomesByCategory = income.reduce((acc, incomeItem) => {
-    const category = categories.find(cat => cat.id === incomeItem.category_id);
+  const incomesByCategory = displayIncome.reduce((acc, incomeItem) => {
+    const category = displayCategories.find(cat => cat.id === incomeItem.category_id);
     const categoryName = category?.name || 'Sem categoria';
     const existing = acc.find(item => item.name === categoryName);
     if (existing) {
@@ -98,7 +151,7 @@ export function Dashboard() {
   }, [] as Array<{ name: string; value: number; color: string }>);
 
   // Calculate overdue payables
-  const overduePayables = payables.filter(p => {
+  const overduePayables = displayPayables.filter(p => {
     const dueDate = new Date(p.due_date);
     const today = new Date();
     return !p.is_paid && dueDate < today;
@@ -106,8 +159,8 @@ export function Dashboard() {
 
   // Recent transactions - combine income and expenses
   const allTransactions = [
-    ...income.map(item => ({ ...item, type: 'income' as const })),
-    ...expenses.map(item => ({ ...item, type: 'expense' as const }))
+    ...displayIncome.map(item => ({ ...item, type: 'income' as const })),
+    ...displayExpenses.map(item => ({ ...item, type: 'expense' as const }))
   ];
   
   const recentTransactions = allTransactions
@@ -126,6 +179,11 @@ export function Dashboard() {
             Visão geral das suas finanças pessoais
           </p>
         </div>
+        {hasNoData && (
+          <Badge variant="outline" className="text-sm px-4 py-2">
+            📊 Dados de Demonstração
+          </Badge>
+        )}
       </div>
 
       {/* Alerts */}
@@ -227,7 +285,7 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {debts.length > 0 ? (
+            {displayDebts.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-lg bg-gradient-to-br from-destructive/5 to-transparent">
@@ -293,7 +351,7 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {investments.length > 0 ? (
+            {displayInvestments.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-lg bg-gradient-to-br from-investment/5 to-transparent">
@@ -321,7 +379,7 @@ export function Dashboard() {
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium mb-3">Top Investimentos:</p>
-                  {investments.slice(0, 3).map((investment, idx) => (
+                  {displayInvestments.slice(0, 3).map((investment, idx) => (
                     <div 
                       key={investment.id} 
                       className="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:translate-x-1"
@@ -356,7 +414,7 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {payables.length > 0 ? (
+            {displayPayables.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-lg bg-gradient-to-br from-warning/5 to-transparent">
@@ -365,7 +423,7 @@ export function Dashboard() {
                   </div>
                   <div className="p-3 rounded-lg bg-gradient-to-br from-warning/5 to-transparent">
                     <p className="text-sm text-muted-foreground mb-1">Contas Pendentes</p>
-                    <p className="text-xl font-bold text-warning">{payables.filter(p => !p.is_paid).length}</p>
+                    <p className="text-xl font-bold text-warning">{displayPayables.filter(p => !p.is_paid).length}</p>
                   </div>
                 </div>
                 {overduePayables.length > 0 && (
@@ -386,7 +444,7 @@ export function Dashboard() {
                 )}
                 <div className="space-y-2">
                   <p className="text-sm font-medium mb-3">Próximos Vencimentos:</p>
-                  {payables
+                  {displayPayables
                     .filter(p => !p.is_paid)
                     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
                     .slice(0, 3)
@@ -433,7 +491,7 @@ export function Dashboard() {
           {recentTransactions.length > 0 ? (
             <div className="space-y-2">
               {recentTransactions.map((transaction, idx) => {
-                const category = categories.find(cat => cat.id === transaction.category_id);
+                const category = displayCategories.find(cat => cat.id === transaction.category_id);
                 return (
                   <div
                     key={transaction.id}
