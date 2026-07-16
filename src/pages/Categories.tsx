@@ -60,9 +60,9 @@ export default function Categories() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Folder className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhuma categoria encontrada</h3>
+            <h3 className="text-lg font-semibold mb-2">Nenhum serviço encontrado</h3>
             <p className="text-muted-foreground text-center">
-              As categorias aparecerão aqui quando forem criadas
+              Os serviços aparecerão aqui quando forem criados
             </p>
           </CardContent>
         </Card>
