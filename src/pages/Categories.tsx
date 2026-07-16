@@ -11,7 +11,7 @@ export default function Categories() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando categorias...</p>
+          <p className="text-muted-foreground">Carregando serviços...</p>
         </div>
       </div>
     );
@@ -20,9 +20,9 @@ export default function Categories() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Categorias</h1>
+        <h1 className="text-3xl font-bold">Serviços</h1>
         <p className="text-muted-foreground">
-          Visualize as categorias disponíveis
+          Visualize os serviços disponíveis
         </p>
       </div>
 
