@@ -48,7 +48,7 @@ export const usePayables = () => {
       if (error) throw error;
       setPayables(data || []);
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao carregar contas a pagar:', error);
       }
       toast({
@@ -90,7 +90,7 @@ export const usePayables = () => {
       });
       return data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao criar conta a pagar:', error);
       }
       toast({
@@ -105,7 +105,7 @@ export const usePayables = () => {
     try {
       const { data, error } = await supabase
         .from('payables')
-        .update(updates)
+        .update({ ...updates, categories: undefined } as any)
         .eq('id', id)
         .select(`
           *,
@@ -126,7 +126,7 @@ export const usePayables = () => {
       });
       return data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao atualizar conta a pagar:', error);
       }
       toast({
@@ -152,7 +152,7 @@ export const usePayables = () => {
         description: "Conta a pagar excluída com sucesso!",
       });
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao excluir conta a pagar:', error);
       }
       toast({

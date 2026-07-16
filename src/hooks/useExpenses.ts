@@ -46,7 +46,7 @@ export const useExpenses = () => {
       if (error) throw error;
       setExpenses(data || []);
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao carregar despesas:', error);
       }
       toast({
@@ -88,7 +88,7 @@ export const useExpenses = () => {
       });
       return data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao criar despesa:', error);
       }
       toast({
@@ -103,7 +103,7 @@ export const useExpenses = () => {
     try {
       const { data, error } = await supabase
         .from('expenses')
-        .update(updates)
+        .update({ ...updates, categories: undefined } as any)
         .eq('id', id)
         .select(`
           *,
@@ -124,7 +124,7 @@ export const useExpenses = () => {
       });
       return data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao atualizar despesa:', error);
       }
       toast({
@@ -150,7 +150,7 @@ export const useExpenses = () => {
         description: "Despesa excluída com sucesso!",
       });
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao excluir despesa:', error);
       }
       toast({

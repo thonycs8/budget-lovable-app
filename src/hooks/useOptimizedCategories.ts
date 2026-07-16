@@ -125,7 +125,7 @@ export const useOptimizedCategories = () => {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<any> }) => {
       const { data, error } = await supabase
         .from('categories')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();

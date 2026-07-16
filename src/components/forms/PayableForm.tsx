@@ -95,7 +95,7 @@ export function PayableForm({ onSuccess }: PayableFormProps) {
 
       onSuccess?.();
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao salvar conta a pagar:', error);
       }
       toast({

@@ -93,7 +93,7 @@ export default function Profile() {
         });
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao carregar perfil:', error);
       }
       toast({
@@ -137,7 +137,7 @@ export default function Profile() {
 
       fetchProfile();
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Erro ao atualizar perfil:', error);
       }
       toast({

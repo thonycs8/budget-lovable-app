@@ -53,7 +53,7 @@ export function useSettings() {
         setSettings(newSettings);
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Error fetching settings:', error);
       }
       toast({
@@ -87,7 +87,7 @@ export function useSettings() {
       
       return { data, error: null };
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Error updating settings:', error);
       }
       toast({
