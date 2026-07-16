@@ -22,7 +22,7 @@ const menuItems = [
   { id: '/calendar', label: 'Calendário', icon: Calendar },
   { id: '/income', label: 'Receitas', icon: TrendingUp },
   { id: '/expenses', label: 'Despesas', icon: TrendingDown },
-  { id: '/categories', label: 'Categorias', icon: Tags },
+  { id: '/categories', label: 'Serviços', icon: Tags },
   { id: '/payables', label: 'Contas a Pagar', icon: CreditCard },
   { id: '/debts', label: 'Dívidas', icon: Wallet },
   { id: '/investments', label: 'Investimentos', icon: PiggyBank },
