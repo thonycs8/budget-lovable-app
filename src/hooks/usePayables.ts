@@ -105,7 +105,7 @@ export const usePayables = () => {
     try {
       const { data, error } = await supabase
         .from('payables')
-        .update(updates)
+        .update({ ...updates, categories: undefined } as any)
         .eq('id', id)
         .select(`
           *,

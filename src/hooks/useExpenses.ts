@@ -103,7 +103,7 @@ export const useExpenses = () => {
     try {
       const { data, error } = await supabase
         .from('expenses')
-        .update(updates)
+        .update({ ...updates, categories: undefined } as any)
         .eq('id', id)
         .select(`
           *,
