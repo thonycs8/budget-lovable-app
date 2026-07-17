@@ -64,11 +64,10 @@ export function Dashboard() {
   const { categories } = useCategories();
   const { formatCurrency } = useCurrency();
 
-  // Check if we should use demo data (no real data available)
-  const hasNoData = income.length === 0 && expenses.length === 0 && payables.length === 0 && 
-                    investments.length === 0 && debts.length === 0;
-  
-  // Use demo data if no real data exists
+  // Show demo only when the user has NO data at all (including categories/services)
+  const hasNoData = income.length === 0 && expenses.length === 0 && payables.length === 0 &&
+                    investments.length === 0 && debts.length === 0 && categories.length === 0;
+
   const displayIncome = hasNoData ? demoIncome : income;
   const displayExpenses = hasNoData ? demoExpenses : expenses;
   const displayPayables = hasNoData ? demoPayables : payables;
