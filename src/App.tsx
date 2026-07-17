@@ -23,6 +23,7 @@ import Investments from "./pages/Investments";
 import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -45,6 +46,7 @@ const AppContent = () => {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/*" element={
                 <div className="min-h-screen flex flex-col w-full">
                   <Header />

@@ -162,6 +162,34 @@ export default function Auth() {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Entrando...' : 'Entrar'}
                   </Button>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="w-full"
+                    onClick={async () => {
+                      const email = signInForm.getValues('email');
+                      if (!email) {
+                        setError('Digite seu email acima para receber o link de recuperação');
+                        return;
+                      }
+                      setLoading(true);
+                      setError('');
+                      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: `${window.location.origin}/reset-password`,
+                      });
+                      setLoading(false);
+                      if (error) {
+                        setError(error.message);
+                      } else {
+                        toast({
+                          title: 'Email enviado!',
+                          description: 'Verifique sua caixa de entrada para redefinir sua senha.',
+                        });
+                      }
+                    }}
+                  >
+                    Esqueci minha senha
+                  </Button>
                 </form>
               </Form>
             </TabsContent>
