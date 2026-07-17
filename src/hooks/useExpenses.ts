@@ -167,7 +167,7 @@ export const useExpenses = () => {
 
       // Subscribe to realtime updates
       const channel = supabase
-        .channel('expenses-changes')
+        .channel(`expenses-changes-${user.id}-${Math.random().toString(36).slice(2)}`)
         .on(
           'postgres_changes',
           {
