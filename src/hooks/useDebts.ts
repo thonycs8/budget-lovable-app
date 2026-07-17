@@ -132,7 +132,7 @@ export function useDebts() {
 
     // Setup realtime subscription
     const channel = supabase
-      .channel(`debts-changes-${user.id}-${Math.random().toString(36).slice(2)}`)
+      .channel(`debts-changes-${userId}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
